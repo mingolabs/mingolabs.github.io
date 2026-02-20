@@ -6,11 +6,11 @@
     <title>MingOS</title>
     <style>
         :root {
-            --bg-colour: #2b2a29; /* Darker base for canvas contrast */
+            --bg-colour: #2b2a29;
             --panel-bg: rgba(30, 30, 30, 0.95);
             --window-bg: #383635;
             --text-colour: #fdfdfd;
-            --accent-colour: #f6a15a; /* Pop!_OS Orange */
+            --accent-colour: #f6a15a;
             --accent-hover: #e08b46;
             --title-bar: #2b2a29;
             --dock-bg: rgba(45, 45, 45, 0.85);
@@ -21,7 +21,6 @@
             height: 100%;
             font-family: 'Fira Sans', system-ui, sans-serif;
             overflow: hidden;
-            background-color: var(--bg-colour);
             color: var(--text-colour);
             user-select: none;
         }
@@ -34,6 +33,8 @@
             width: 100vw;
             height: 100vh;
             z-index: -1;
+            background-color: var(--bg-colour);
+            display: block;
         }
 
         /* Splash Screen */
@@ -274,19 +275,18 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5;
+                this.size = Math.random() * 2 + 1;
                 this.speedX = (Math.random() * 1) - 0.5;
                 this.speedY = (Math.random() * 1) - 0.5;
             }
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                if (this.size > 0.2) this.size -= 0.01;
                 if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
             }
             draw() {
-                ctx.fillStyle = 'rgba(246, 161, 90, 0.5)'; // Accent colour
+                ctx.fillStyle = 'rgba(246, 161, 90, 0.5)';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
