@@ -66,7 +66,7 @@
         }
 
         .splash-logo { 
-            max-width: 300px; 
+            max-width: 500px; 
             height: auto; 
             margin-bottom: 2rem; 
             display: block;
@@ -172,7 +172,7 @@
             const pops = ['pop1.mp3', 'pop2.mp3', 'pop3.mp3'];
             const randomPop = pops[Math.floor(Math.random() * pops.length)];
             const audio = new Audio(randomPop);
-            audio.volume = 0.3;
+            audio.volume = 0.1;
             audio.play().catch(e => {});
         }
 
