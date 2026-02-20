@@ -3,8 +3,8 @@ const fluidCtx = fluidCanvas.getContext('2d');
 const particleCanvas = document.getElementById('bg-particles');
 const particleCtx = particleCanvas.getContext('2d');
 
-let fluidShapesArray;
-let particlesArray;
+let fluidShapesArray = [];
+let particlesArray = [];
 
 function resizeCanvases() {
     fluidCanvas.width = window.innerWidth;
@@ -97,7 +97,11 @@ function initShapes() {
 
 function initParticles() {
     particlesArray = [];
-    let numberOfParticles = (particleCanvas.width * particleCanvas.height) / 9000;
+    let numberOfParticles = Math.floor((particleCanvas.width * particleCanvas.height) / 9000);
+    
+    // Strict safety cap to prevent browser freezing
+    if (numberOfParticles > 150) numberOfParticles = 150;
+
     for (let i = 0; i < numberOfParticles; i++) {
         particlesArray.push(new Particle());
     }
@@ -118,7 +122,8 @@ function animateBackground() {
         particlesArray[i].update();
         particlesArray[i].draw();
         
-        for (let j = i; j < particlesArray.length; j++) {
+        // Optimised loop: start from i + 1 to halve the required calculations
+        for (let j = i + 1; j < particlesArray.length; j++) {
             const dx = particlesArray[i].x - particlesArray[j].x;
             const dy = particlesArray[i].y - particlesArray[j].y;
             const distance = Math.sqrt(dx * dx + dy * dy);
