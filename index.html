@@ -6,14 +6,13 @@
     <title>MingOS</title>
     <style>
         :root {
-            --bg-colour: #2b2a29;
-            --panel-bg: rgba(30, 30, 30, 0.95);
-            --window-bg: #383635;
+            --bg-base: #1E3A5F; /* Vibrant Teal Base */
+            --panel-bg: rgba(30, 30, 30, 0.85);
+            --window-bg: #2b2a29;
             --text-colour: #fdfdfd;
-            --accent-colour: #f6a15a;
-            --accent-hover: #e08b46;
-            --title-bar: #2b2a29;
-            --dock-bg: rgba(45, 45, 45, 0.85);
+            --accent-colour: #f6a15a; /* Pop!_OS Orange */
+            --title-bar: #383635;
+            --dock-bg: rgba(40, 40, 40, 0.7);
         }
         body, html {
             margin: 0;
@@ -21,10 +20,12 @@
             height: 100%;
             font-family: 'Fira Sans', system-ui, sans-serif;
             overflow: hidden;
+            background-color: var(--bg-base);
             color: var(--text-colour);
             user-select: none;
         }
 
+        /* Fluid Background */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -32,7 +33,9 @@
             width: 100vw;
             height: 100vh;
             z-index: -1;
-            display: block;
+            filter: blur(120px);
+            transform: scale(1.2); /* Prevents blurred edges bleeding inward */
+            opacity: 0.85;
         }
 
         #splash-screen {
@@ -66,9 +69,7 @@
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        .boot-btn:hover { background-color: var(--accent-hover); }
 
         .top-bar {
             position: absolute;
@@ -84,43 +85,43 @@
             z-index: 9000;
             font-size: 0.9rem;
             font-weight: 500;
+            backdrop-filter: blur(10px);
         }
         .top-bar-centre { position: absolute; left: 50%; transform: translateX(-50%); }
 
         .dock {
             position: absolute;
-            bottom: 10px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             background-color: var(--dock-bg);
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
+            padding: 0.5rem;
+            border-radius: 16px;
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             z-index: 9000;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
         }
         .dock-icon {
-            width: 48px;
-            height: 48px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s;
         }
         .dock-icon:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-5px);
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-8px) scale(1.05);
         }
         .dock-icon.active::after {
             content: '';
             position: absolute;
-            bottom: -4px;
+            bottom: -6px;
             width: 6px;
             height: 6px;
             background-color: var(--accent-colour);
@@ -131,14 +132,22 @@
             position: absolute;
             width: 600px;
             background-color: var(--window-bg);
-            border-radius: 8px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            border-radius: 10px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
             display: none;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            transition: border-color 0.15s ease;
         }
         .window.active { display: flex; }
+        
+        /* Pop!_OS 24.04 Active Hint */
+        .window.active-focus {
+            border-color: var(--accent-colour);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
+
         .title-bar {
             background-color: var(--title-bar);
             padding: 0.6rem 1rem;
@@ -147,7 +156,7 @@
             align-items: center;
             cursor: move;
         }
-        .window-title { font-weight: 600; font-size: 0.9rem; pointer-events: none; }
+        .window-title { font-weight: 600; font-size: 0.95rem; pointer-events: none; }
         .close-btn {
             background: #e95420;
             border: none;
@@ -156,7 +165,6 @@
             border-radius: 50%;
             cursor: pointer;
         }
-        .close-btn:hover { background: #ff7242; }
         .window-content {
             padding: 1.5rem;
             min-height: 300px;
@@ -164,7 +172,7 @@
         }
 
         .project-card {
-            background: #2a2827;
+            background: #3a3837;
             padding: 1.2rem;
             margin-bottom: 1.2rem;
             border-radius: 6px;
@@ -175,8 +183,8 @@
         .tag {
             display: inline-block;
             font-size: 0.75rem;
-            background: #444;
-            padding: 0.2rem 0.5rem;
+            background: #222;
+            padding: 0.3rem 0.6rem;
             margin-top: 0.8rem;
             margin-right: 0.5rem;
             border-radius: 4px;
@@ -215,11 +223,6 @@
                 <p>Custom 3D-printed chassis featuring an Arduino Mega core, ultrasonic array, and RPLIDAR A1 for 2D room mapping integration.</p>
                 <span class="tag">C++</span><span class="tag">Hardware</span>
             </div>
-            <div class="project-card">
-                <h4>Automated Greenhouse Controller</h4>
-                <p>ESP32-based logic board governing soil moisture sensors, temperature probes, and 12v water pump relays.</p>
-                <span class="tag">ESP32</span><span class="tag">Electronics</span>
-            </div>
         </div>
     </div>
 
@@ -230,8 +233,8 @@
         </div>
         <div class="window-content">
             <div class="project-card">
-                <h4>Telemetry Visualisation Dashboard</h4>
-                <p>A full-stack web application designed to ingest serial data from remote hardware and plot real-time graphs using WebSockets.</p>
+                <h4>Telemetry Dashboard</h4>
+                <p>Full-stack web application designed to ingest serial data from remote hardware and plot real-time graphs using WebSockets.</p>
                 <span class="tag">Python</span><span class="tag">JavaScript</span>
             </div>
         </div>
@@ -239,40 +242,33 @@
 
     <div id="readme-win" class="window" style="top: 10%; left: 50%;">
         <div class="title-bar">
-            <span class="window-title">Text Editor - System_Info.txt</span>
+            <span class="window-title">System_Info.txt</span>
             <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button>
         </div>
         <div class="window-content" style="background: #1e1e1e; font-family: monospace;">
-            <h3>MingOS Engineering Environment</h3>
+            <h3>MingOS Environment</h3>
             <p>System Initialised.</p>
-            <p>Use the dock to launch applications and view build logs.</p>
         </div>
     </div>
 
     <script src="background.js"></script>
 
     <script>
-        // UI Logic
         function bootSystem() {
             try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                const ctx = new AudioContext();
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(800, ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-
                 gain.gain.setValueAtTime(1, ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-
                 osc.connect(gain);
                 gain.connect(ctx.destination);
-
                 osc.start();
                 osc.stop(ctx.currentTime + 0.1);
-            } catch (e) { console.log("Audio not supported"); }
+            } catch (e) {}
 
             const splash = document.getElementById('splash-screen');
             splash.style.opacity = '0';
@@ -294,6 +290,10 @@
         }
 
         function focusWindow(win) {
+            // Apply Pop!_OS Active Focus styling
+            document.querySelectorAll('.window').forEach(w => w.classList.remove('active-focus'));
+            win.classList.add('active-focus');
+            
             zIndexCounter++;
             win.style.zIndex = zIndexCounter;
         }
@@ -308,6 +308,7 @@
                 isDragging = true;
                 offsetX = e.clientX - win.getBoundingClientRect().left;
                 offsetY = e.clientY - win.getBoundingClientRect().top;
+                focusWindow(win);
             });
 
             document.addEventListener('mousemove', (e) => {
