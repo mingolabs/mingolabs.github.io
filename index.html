@@ -35,12 +35,7 @@
         #splash-wrapper {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 99999; display: flex; align-items: center; justify-content: center;
-            pointer-events: none; background-color: rgba(30, 58, 95, 1);
-            transition: background-color 3s ease 1s;
-        }
-        
-        #splash-wrapper.booting {
-            background-color: transparent;
+            pointer-events: none; background-color: transparent;
         }
 
         #splash-box {
@@ -164,7 +159,6 @@
             const audio = new Audio('login.mp3');
             audio.play().catch(e => console.log("Audio playback failed:", e));
 
-            document.getElementById('splash-wrapper').classList.add('booting');
             document.getElementById('splash-box').classList.add('booting');
             document.getElementById('desktop-ui').classList.add('active');
             
