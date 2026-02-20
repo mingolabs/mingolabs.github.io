@@ -35,24 +35,19 @@
         #splash-wrapper {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 99999; display: flex; align-items: center; justify-content: center;
-            pointer-events: none; background-color: transparent;
+            pointer-events: none;
         }
 
         @keyframes aggressive-pulse {
-            0% { 
-                box-shadow: 0 0 20px rgba(246, 161, 90, 0.2), inset 0 0 10px rgba(246, 161, 90, 0.1);
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(246, 161, 90, 0.2);
                 transform: scale(1);
                 border-color: rgba(246, 161, 90, 0.3);
             }
             50% { 
-                box-shadow: 0 0 60px rgba(246, 161, 90, 0.6), inset 0 0 20px rgba(246, 161, 90, 0.3);
-                transform: scale(1.03);
+                box-shadow: 0 0 50px rgba(246, 161, 90, 0.5);
+                transform: scale(1.02);
                 border-color: rgba(246, 161, 90, 0.8);
-            }
-            100% { 
-                box-shadow: 0 0 20px rgba(246, 161, 90, 0.2), inset 0 0 10px rgba(246, 161, 90, 0.1);
-                transform: scale(1);
-                border-color: rgba(246, 161, 90, 0.3);
             }
         }
 
@@ -61,13 +56,17 @@
             border: 2px solid var(--accent-colour);
             border-radius: 16px; padding: 3.5rem 5rem; text-align: center;
             backdrop-filter: blur(15px); pointer-events: auto;
+            /* Using will-change to prevent flickering during animation */
+            will-change: transform, opacity;
             animation: aggressive-pulse 4s infinite ease-in-out;
-            transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1), opacity 4s ease 1s;
+            transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1), opacity 2s ease-in;
         }
         
         #splash-box.booting {
-            animation: none;
-            transform: scale(5); opacity: 0; pointer-events: none;
+            animation: none !important;
+            transform: scale(2.5) !important; 
+            opacity: 0 !important;
+            pointer-events: none;
         }
         
         .logo-placeholder { font-size: 4.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 2rem; text-shadow: 0 0 15px rgba(246, 161, 90, 0.5); }
@@ -79,11 +78,11 @@
             border-radius: 6px; cursor: pointer; transition: all 0.3s;
             text-transform: uppercase; letter-spacing: 1px;
         }
-        .boot-btn:hover { background-color: #fff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .boot-btn:hover { background-color: #fff; transform: translateY(-2px); }
 
         #desktop-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; opacity: 0; transition: opacity 4s ease 3.5s; pointer-events: none;
+            z-index: 10; opacity: 0; transition: opacity 3s ease 1.5s; pointer-events: none;
         }
         
         #desktop-ui.active { opacity: 1; pointer-events: auto; }
@@ -96,19 +95,13 @@
         .dock-icon:hover { background-color: rgba(255, 255, 255, 0.15); transform: translateY(-10px) scale(1.15); }
         .dock-icon.active::after { content: ''; position: absolute; bottom: -8px; width: 5px; height: 5px; background-color: var(--accent-colour); border-radius: 50%; box-shadow: 0 0 8px var(--accent-colour); }
 
-        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); transition: border-color 0.2s, transform 0.2s; }
+        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); transition: border-color 0.2s; }
         .window.active { display: flex; }
-        .window.active-focus { border-color: var(--accent-colour); box-shadow: 0 0 25px rgba(246, 161, 90, 0.15), 0 20px 60px rgba(0,0,0,0.6); }
+        .window.active-focus { border-color: var(--accent-colour); }
         .title-bar { background-color: var(--title-bar); padding: 0.7rem 1.2rem; display: flex; justify-content: space-between; align-items: center; cursor: move; }
-        .window-title { font-weight: 600; font-size: 0.9rem; color: #ccc; }
-        .close-btn { background: #ff5f57; border: none; width: 12px; height: 12px; border-radius: 50%; cursor: pointer; transition: filter 0.2s; }
-        .close-btn:hover { filter: brightness(1.2); }
-        .window-content { padding: 1.8rem; min-height: 320px; overflow-y: auto; background: linear-gradient(180deg, #2b2a29 0%, #242322 100%); }
-        .project-card { background: rgba(58, 56, 55, 0.5); padding: 1.4rem; margin-bottom: 1.2rem; border-radius: 8px; border-left: 4px solid var(--accent-colour); transition: background 0.2s; }
-        .project-card:hover { background: rgba(58, 56, 55, 0.8); }
-        .project-card h4 { margin: 0 0 0.6rem 0; font-size: 1.15rem; color: var(--accent-colour); }
-        .project-card p { margin: 0; font-size: 0.95rem; color: #e0e0e0; line-height: 1.6; }
-        .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; background: #1a1a1a; color: #aaa; padding: 0.3rem 0.7rem; margin-top: 1rem; margin-right: 0.5rem; border-radius: 4px; text-transform: uppercase; }
+        .close-btn { background: #ff5f57; border: none; width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+        .window-content { padding: 1.8rem; min-height: 320px; overflow-y: auto; background: #2b2a29; }
+        .project-card { background: rgba(58, 56, 55, 0.5); padding: 1.4rem; margin-bottom: 1.2rem; border-radius: 8px; border-left: 4px solid var(--accent-colour); }
     </style>
 </head>
 <body>
@@ -131,35 +124,33 @@
         </div>
 
         <div class="dock">
-            <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" onmouseenter="playTick()" title="Robotics">⚙️</div>
-            <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" onmouseenter="playTick()" title="Software">💻</div>
-            <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" onmouseenter="playTick()" title="System Info">📄</div>
+            <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" onmouseenter="playRandomPop()" title="Robotics">⚙️</div>
+            <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" onmouseenter="playRandomPop()" title="Software">💻</div>
+            <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" onmouseenter="playRandomPop()" title="System Info">📄</div>
         </div>
 
         <div id="robotics-win" class="window" style="top: 15%; left: 15%;">
             <div class="title-bar">
-                <span class="window-title">Robotics Projects</span>
+                <span class="window-title">Robotics</span>
                 <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="close-btn"></button>
             </div>
             <div class="window-content">
                 <div class="project-card">
                     <h4>Autonomous Rover Mk II</h4>
-                    <p>Custom 3D-printed chassis featuring an Arduino Mega core, ultrasonic array, and RPLIDAR A1 for 2D room mapping integration.</p>
-                    <span class="tag">C++</span><span class="tag">Hardware</span>
+                    <p>Arduino Mega core with RPLIDAR integration.</p>
                 </div>
             </div>
         </div>
 
         <div id="software-win" class="window" style="top: 20%; left: 20%;">
             <div class="title-bar">
-                <span class="window-title">Software Development</span>
+                <span class="window-title">Software</span>
                 <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="close-btn"></button>
             </div>
             <div class="window-content">
                 <div class="project-card">
                     <h4>Telemetry Dashboard</h4>
-                    <p>Full-stack web application designed to ingest serial data from remote hardware and plot real-time graphs using WebSockets.</p>
-                    <span class="tag">Python</span><span class="tag">JavaScript</span>
+                    <p>Real-time data visualization via WebSockets.</p>
                 </div>
             </div>
         </div>
@@ -169,11 +160,8 @@
                 <span class="window-title">System_Info.log</span>
                 <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button>
             </div>
-            <div class="window-content" style="background: #181818; font-family: 'Fira Code', monospace;">
-                <h3 style="color: var(--accent-colour);">> MING_OS v2.0.4</h3>
-                <p style="color: #00ff00;">[OK] Kernel Loaded</p>
-                <p style="color: #00ff00;">[OK] Particle Engine Active</p>
-                <p style="color: #888;">System is running in a web environment via GitHub Pages.</p>
+            <div class="window-content" style="background: #181818; font-family: monospace;">
+                <p style="color: #00ff00;">> System Online.</p>
             </div>
         </div>
     </div>
@@ -181,45 +169,28 @@
     <script src="os-background.js"></script>
 
     <script>
-        let audioCtx;
-
         function bootSystem() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            const loginAudio = new Audio('login.mp3');
+            loginAudio.play().catch(e => console.log("Audio play blocked"));
 
-            const audio = new Audio('login.mp3');
-            audio.play().catch(e => console.log("Audio skipped:", e));
-
-            document.getElementById('splash-box').classList.add('booting');
+            const splash = document.getElementById('splash-box');
+            splash.classList.add('booting');
             document.getElementById('desktop-ui').classList.add('active');
             
             setTimeout(() => {
                 document.getElementById('splash-wrapper').style.display = 'none';
-            }, 6000);
+            }, 5000);
         }
 
-        function playTick() {
-            if (!audioCtx || audioCtx.state === 'suspended') return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'square'; // Sharper, more mechanical "click"
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.02);
-            
-            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.02);
+        function playRandomPop() {
+            const pops = ['pop1.mp3', 'pop2.mp3', 'pop3.mp3'];
+            const randomPop = pops[Math.floor(Math.random() * pops.length)];
+            const audio = new Audio(randomPop);
+            audio.volume = 0.4;
+            audio.play().catch(e => {});
         }
 
         let zIndexCounter = 100;
-
         function toggleWindow(winId, dockElement) {
             const win = document.getElementById(winId);
             if (win.classList.contains('active')) {
@@ -243,14 +214,12 @@
             win.addEventListener('mousedown', () => focusWindow(win));
             const titleBar = win.querySelector('.title-bar');
             let isDragging = false, offsetX, offsetY;
-
             titleBar.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 offsetX = e.clientX - win.getBoundingClientRect().left;
                 offsetY = e.clientY - win.getBoundingClientRect().top;
                 focusWindow(win);
             });
-
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
                 win.style.left = (e.clientX - offsetX) + 'px';
