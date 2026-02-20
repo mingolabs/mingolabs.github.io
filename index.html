@@ -23,12 +23,12 @@
 
         #bg-fluid {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -2; filter: blur(120px); transform: scale(1.2); opacity: 0.85;
+            z-index: 1; filter: blur(120px); transform: scale(1.2); opacity: 0.85;
         }
         
         #bg-particles {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
+            z-index: 2;
         }
 
         #splash-wrapper {
@@ -59,17 +59,17 @@
         }
 
         #desktop-ui {
-            opacity: 0; transition: opacity 3s ease 1s; pointer-events: none;
-            height: 100%; width: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; opacity: 0; transition: opacity 3s ease 1s; pointer-events: none;
         }
         
         #desktop-ui.active {
             opacity: 1; pointer-events: auto;
         }
 
-        .top-bar { position: absolute; top: 0; width: 100%; height: 28px; background-color: var(--panel-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; box-sizing: border-box; z-index: 9000; font-size: 0.9rem; font-weight: 500; backdrop-filter: blur(10px); }
+        .top-bar { position: absolute; top: 0; width: 100%; height: 28px; background-color: var(--panel-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; box-sizing: border-box; font-size: 0.9rem; font-weight: 500; backdrop-filter: blur(10px); }
         .top-bar-centre { position: absolute; left: 50%; transform: translateX(-50%); }
-        .dock { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background-color: var(--dock-bg); padding: 0.5rem; border-radius: 16px; display: flex; gap: 0.8rem; z-index: 9000; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); }
+        .dock { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background-color: var(--dock-bg); padding: 0.5rem; border-radius: 16px; display: flex; gap: 0.8rem; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); }
         .dock-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s; }
         .dock-icon:hover { background-color: rgba(255, 255, 255, 0.1); transform: translateY(-8px) scale(1.05); }
         .dock-icon.active::after { content: ''; position: absolute; bottom: -6px; width: 6px; height: 6px; background-color: var(--accent-colour); border-radius: 50%; }
