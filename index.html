@@ -57,9 +57,21 @@
         }
         .card {
             background-color: var(--card-bg);
-            padding: 1.5rem;
             border-radius: 8px;
             border-top: 3px solid var(--accent-colour);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #333;
+            border-bottom: 1px solid #444;
+        }
+        .card-content {
+            padding: 1.5rem;
         }
         .tag {
             font-size: 0.8rem;
@@ -92,21 +104,30 @@
     <main class="grid" id="projectGrid">
         
         <div class="card" data-category="robotics electronics">
-            <h3>Autonomous Rover</h3>
-            <p>Custom chassis with ultrasonic sensors and LIDAR for 2D room mapping.</p>
-            <span class="tag">Robotics</span> <span class="tag">Electronics</span>
+            <img src="image-placeholder.jpg" alt="Autonomous Rover" class="card-img">
+            <div class="card-content">
+                <h3>Autonomous Rover</h3>
+                <p>Custom chassis with ultrasonic sensors and LIDAR for 2D room mapping.</p>
+                <span class="tag">Robotics</span> <span class="tag">Electronics</span>
+            </div>
         </div>
 
         <div class="card" data-category="software">
-            <h3>Telemetry Visualisation</h3>
-            <p>A web dashboard built to graph incoming hardware data in real-time.</p>
-            <span class="tag">Software</span>
+            <img src="image-placeholder.jpg" alt="Telemetry Visualisation" class="card-img">
+            <div class="card-content">
+                <h3>Telemetry Visualisation</h3>
+                <p>A web dashboard built to graph incoming hardware data in real-time.</p>
+                <span class="tag">Software</span>
+            </div>
         </div>
 
         <div class="card" data-category="electronics software">
-            <h3>Greenhouse Controller</h3>
-            <p>Microcontroller-based system monitoring soil moisture and operating relays.</p>
-            <span class="tag">Electronics</span> <span class="tag">Software</span>
+            <img src="image-placeholder.jpg" alt="Greenhouse Controller" class="card-img">
+            <div class="card-content">
+                <h3>Greenhouse Controller</h3>
+                <p>Microcontroller-based system monitoring soil moisture and operating relays.</p>
+                <span class="tag">Electronics</span> <span class="tag">Software</span>
+            </div>
         </div>
 
     </main>
