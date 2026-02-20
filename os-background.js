@@ -88,7 +88,7 @@ function initShapes() {
     fluidShapesArray = [];
     let numberOfShapes = Math.floor((fluidCanvas.width * fluidCanvas.height) / 80000); 
     if (numberOfShapes < 4) numberOfShapes = 4;
-    if (numberOfShapes > 12) numberOfShapes = 12;
+    if (numberOfShapes > 16) numberOfShapes = 16;
     
     for (let i = 0; i < numberOfShapes; i++) {
         fluidShapesArray.push(new FluidShape());
