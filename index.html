@@ -1,1 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MingoLabs | Engineering Portfolio</title>
+    <style>
+        :root {
+            --bg-colour: #121212;
+            --text-colour: #f0f0f0;
+            --card-bg: #1e1e1e;
+            --accent-colour: #00d2ff;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-colour);
+            color: var(--text-colour);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        header { 
+            text-align: center; 
+            margin-bottom: 3rem; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 2rem; 
+        }
+        h1 { 
+            color: var(--accent-colour); 
+            margin-bottom: 0.5rem; 
+        }
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        button {
+            background: transparent;
+            color: var(--text-colour);
+            border: 1px solid var(--accent-colour);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover, button.active {
+            background: var(--accent-colour);
+            color: #000;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-top: 3px solid var(--accent-colour);
+        }
+        .tag {
+            font-size: 0.8rem;
+            background: #333;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
 
+    <header>
+        <h1>MingoLabs</h1>
+        <p>Software, Robotics, and Electronics Builds</p>
+    </header>
+
+    <div class="filters">
+        <button class="active" onclick="filterProjects('all', this)">All</button>
+        <button onclick="filterProjects('robotics', this)">Robotics</button>
+        <button onclick="filterProjects('software', this)">Software</button>
+        <button onclick="filterProjects('electronics', this)">Electronics</button>
+    </div>
+
+    <main class="grid" id="projectGrid">
+        
+        <div class="card" data-category="robotics electronics">
+            <h3>Autonomous Rover</h3>
+            <p>Custom chassis with ultrasonic sensors and LIDAR for 2D room mapping.</p>
+            <span class="tag">Robotics</span> <span class="tag">Electronics</span>
+        </div>
+
+        <div class="card" data-category="software">
+            <h3>Telemetry Visualisation</h3>
+            <p>A web dashboard built to graph incoming hardware data in real-time.</p>
+            <span class="tag">Software</span>
+        </div>
+
+        <div class="card" data-category="electronics software">
+            <h3>Greenhouse Controller</h3>
+            <p>Microcontroller-based system monitoring soil moisture and operating relays.</p>
+            <span class="tag">Electronics</span> <span class="tag">Software</span>
+        </div>
+
+    </main>
+
+    <script>
+        function filterProjects(category, buttonElement) {
+            const cards = document.querySelectorAll('.card');
+            const buttons = document.querySelectorAll('.filters button');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+
+            cards.forEach(card => {
+                const categories = card.getAttribute('data-category').split(' ');
+                if (category === 'all' || categories.includes(category)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
