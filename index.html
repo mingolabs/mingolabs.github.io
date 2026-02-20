@@ -35,67 +35,64 @@
         #splash-wrapper {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 99999; display: flex; align-items: center; justify-content: center;
-            pointer-events: none;
+            perspective: 1000px;
+        }
+
+        /* Separate pulse container to avoid transform conflicts */
+        .pulse-container {
+            animation: aggressive-pulse 4s infinite ease-in-out;
+            will-change: transform;
         }
 
         @keyframes aggressive-pulse {
-            0%, 100% { 
-                box-shadow: 0 0 20px rgba(246, 161, 90, 0.2);
-                transform: scale(1);
-                border-color: rgba(246, 161, 90, 0.3);
-            }
-            50% { 
-                box-shadow: 0 0 50px rgba(246, 161, 90, 0.5);
-                transform: scale(1.02);
-                border-color: rgba(246, 161, 90, 0.8);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
         }
 
         #splash-box {
-            background: rgba(20, 20, 20, 0.9);
+            background: rgba(20, 20, 20, 0.95);
             border: 2px solid var(--accent-colour);
             border-radius: 16px; padding: 3.5rem 5rem; text-align: center;
             backdrop-filter: blur(15px); pointer-events: auto;
-            /* Using will-change to prevent flickering during animation */
-            will-change: transform, opacity;
-            animation: aggressive-pulse 4s infinite ease-in-out;
-            transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1), opacity 2s ease-in;
+            box-shadow: 0 0 30px rgba(246, 161, 90, 0.2);
+            transition: transform 2.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 2s ease-out;
+            backface-visibility: hidden;
         }
         
-        #splash-box.booting {
-            animation: none !important;
-            transform: scale(2.5) !important; 
-            opacity: 0 !important;
+        /* The "Blow up" effect - smooth zoom and fade */
+        .booting #splash-box {
+            transform: scale(4);
+            opacity: 0;
             pointer-events: none;
         }
-        
-        .logo-placeholder { font-size: 4.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 2rem; text-shadow: 0 0 15px rgba(246, 161, 90, 0.5); }
+
+        .logo-placeholder { font-size: 4.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 2rem; }
         .logo-placeholder span { color: var(--accent-colour); }
         
         .boot-btn {
             background-color: var(--accent-colour); color: #111; border: none;
             padding: 1rem 2.5rem; font-size: 1.3rem; font-weight: 800;
-            border-radius: 6px; cursor: pointer; transition: all 0.3s;
-            text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 6px; cursor: pointer; transition: background 0.2s;
+            text-transform: uppercase;
         }
-        .boot-btn:hover { background-color: #fff; transform: translateY(-2px); }
+        .boot-btn:hover { background-color: #fff; }
 
         #desktop-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; opacity: 0; transition: opacity 3s ease 1.5s; pointer-events: none;
+            z-index: 10; opacity: 0; transition: opacity 3s ease 1s; pointer-events: none;
         }
         
         #desktop-ui.active { opacity: 1; pointer-events: auto; }
 
-        .top-bar { position: absolute; top: 0; width: 100%; height: 30px; background-color: var(--panel-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem; box-sizing: border-box; font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .top-bar { position: absolute; top: 0; width: 100%; height: 30px; background-color: var(--panel-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem; box-sizing: border-box; font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(10px); }
         .top-bar-centre { position: absolute; left: 50%; transform: translateX(-50%); }
         
-        .dock { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--dock-bg); padding: 0.6rem; border-radius: 20px; display: flex; gap: 1rem; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .dock { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--dock-bg); padding: 0.6rem; border-radius: 20px; display: flex; gap: 1rem; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); }
         .dock-icon { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s; position: relative; }
         .dock-icon:hover { background-color: rgba(255, 255, 255, 0.15); transform: translateY(-10px) scale(1.15); }
         .dock-icon.active::after { content: ''; position: absolute; bottom: -8px; width: 5px; height: 5px; background-color: var(--accent-colour); border-radius: 50%; box-shadow: 0 0 8px var(--accent-colour); }
 
-        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); transition: border-color 0.2s; }
+        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
         .window.active { display: flex; }
         .window.active-focus { border-color: var(--accent-colour); }
         .title-bar { background-color: var(--title-bar); padding: 0.7rem 1.2rem; display: flex; justify-content: space-between; align-items: center; cursor: move; }
@@ -110,9 +107,11 @@
     <canvas id="bg-particles"></canvas>
 
     <div id="splash-wrapper">
-        <div id="splash-box">
-            <div class="logo-placeholder">Ming<span>OS</span></div>
-            <button class="boot-btn" onclick="bootSystem()">Initialise</button>
+        <div class="pulse-container" id="pulse-box">
+            <div id="splash-box">
+                <div class="logo-placeholder">Ming<span>OS</span></div>
+                <button class="boot-btn" onclick="bootSystem()">Initialise</button>
+            </div>
         </div>
     </div>
 
@@ -130,39 +129,18 @@
         </div>
 
         <div id="robotics-win" class="window" style="top: 15%; left: 15%;">
-            <div class="title-bar">
-                <span class="window-title">Robotics</span>
-                <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="close-btn"></button>
-            </div>
-            <div class="window-content">
-                <div class="project-card">
-                    <h4>Autonomous Rover Mk II</h4>
-                    <p>Arduino Mega core with RPLIDAR integration.</p>
-                </div>
-            </div>
+            <div class="title-bar"><span class="window-title">Robotics</span><button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="close-btn"></button></div>
+            <div class="window-content"><div class="project-card"><h4>Autonomous Rover Mk II</h4><p>RPLIDAR integration.</p></div></div>
         </div>
 
         <div id="software-win" class="window" style="top: 20%; left: 20%;">
-            <div class="title-bar">
-                <span class="window-title">Software</span>
-                <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="close-btn"></button>
-            </div>
-            <div class="window-content">
-                <div class="project-card">
-                    <h4>Telemetry Dashboard</h4>
-                    <p>Real-time data visualization via WebSockets.</p>
-                </div>
-            </div>
+            <div class="title-bar"><span class="window-title">Software</span><button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="close-btn"></button></div>
+            <div class="window-content"><div class="project-card"><h4>Telemetry Dashboard</h4><p>WebSockets and Python.</p></div></div>
         </div>
 
         <div id="readme-win" class="window" style="top: 10%; left: 50%;">
-            <div class="title-bar">
-                <span class="window-title">System_Info.log</span>
-                <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button>
-            </div>
-            <div class="window-content" style="background: #181818; font-family: monospace;">
-                <p style="color: #00ff00;">> System Online.</p>
-            </div>
+            <div class="title-bar"><span class="window-title">System_Info.log</span><button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button></div>
+            <div class="window-content" style="background: #181818; font-family: monospace;"><p style="color: #00ff00;">> System Online.</p></div>
         </div>
     </div>
 
@@ -171,22 +149,26 @@
     <script>
         function bootSystem() {
             const loginAudio = new Audio('login.mp3');
-            loginAudio.play().catch(e => console.log("Audio play blocked"));
+            loginAudio.play().catch(e => {});
 
-            const splash = document.getElementById('splash-box');
-            splash.classList.add('booting');
+            // Stop the pulsing animation immediately
+            const pulseContainer = document.getElementById('pulse-box');
+            pulseContainer.style.animation = 'none';
+
+            // Trigger the zoom-out transition
+            document.getElementById('splash-wrapper').classList.add('booting');
             document.getElementById('desktop-ui').classList.add('active');
             
             setTimeout(() => {
                 document.getElementById('splash-wrapper').style.display = 'none';
-            }, 5000);
+            }, 4000);
         }
 
         function playRandomPop() {
             const pops = ['pop1.mp3', 'pop2.mp3', 'pop3.mp3'];
             const randomPop = pops[Math.floor(Math.random() * pops.length)];
             const audio = new Audio(randomPop);
-            audio.volume = 0.4;
+            audio.volume = 0.3;
             audio.play().catch(e => {});
         }
 
