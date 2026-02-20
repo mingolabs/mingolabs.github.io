@@ -6,45 +6,53 @@
     <title>MingoLabs OS</title>
     <style>
         :root {
-            --desktop-bg: #0f4c81;
+            --desktop-bg: #2b5b84;
             --window-bg: #1e1e1e;
             --text-colour: #f0f0f0;
-            --accent-colour: #00d2ff;
-            --title-bar: #333;
+            --accent-colour: #0078d7;
+            --title-bar: #2d2d2d;
+            --taskbar-bg: rgba(20, 20, 20, 0.95);
         }
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
             background-color: var(--desktop-bg);
+            background-image: radial-gradient(circle, #3b7ba4 0%, #1a3a5a 100%);
             color: var(--text-colour);
             user-select: none;
         }
         
-        /* Desktop Icons */
+        /* Desktop */
         .desktop {
             padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            align-items: flex-start;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 100px);
+            grid-template-rows: repeat(auto-fill, 100px);
+            gap: 1rem;
+            height: calc(100% - 48px);
         }
         .icon {
             width: 80px;
+            height: 80px;
             text-align: center;
             cursor: pointer;
             padding: 0.5rem;
             border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .icon:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.15);
         }
         .icon-img {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
-            display: block;
+            filter: drop-shadow(2px 4px 6px black);
         }
         .icon-text {
             font-size: 0.85rem;
@@ -54,39 +62,47 @@
         /* Window System */
         .window {
             position: absolute;
-            top: 20%;
-            left: 20%;
-            width: 500px;
+            width: 550px;
             background-color: var(--window-bg);
-            border: 1px solid var(--title-bar);
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            border-radius: 6px 6px 0 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: none;
             flex-direction: column;
-            z-index: 10;
+            resize: both;
+            overflow: hidden;
         }
         .window.active {
             display: flex;
         }
         .title-bar {
             background-color: var(--title-bar);
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: move;
             border-bottom: 2px solid var(--accent-colour);
         }
-        .close-btn {
-            background: #ff5f56;
-            border: none;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            cursor: pointer;
+        .window-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            pointer-events: none;
         }
+        .window-controls button {
+            background: transparent;
+            border: none;
+            color: var(--text-colour);
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+        .window-controls .close-btn:hover { color: #ff5f56; }
         .window-content {
             padding: 1.5rem;
-            min-height: 200px;
+            min-height: 250px;
+            overflow-y: auto;
+            background: #121212;
         }
 
         /* Taskbar */
@@ -94,118 +110,228 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 40px;
-            background-color: rgba(0, 0, 0, 0.8);
+            height: 48px;
+            background-color: var(--taskbar-bg);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 1rem;
             border-top: 1px solid #333;
-            z-index: 20;
+            z-index: 9999;
+            box-sizing: border-box;
         }
         .start-btn {
+            background-color: transparent;
+            border: none;
+            color: var(--text-colour);
             font-weight: bold;
-            color: var(--accent-colour);
+            font-size: 1rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        .start-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .clock {
+            font-size: 0.9rem;
+            margin-right: 1rem;
         }
 
-        /* Project Cards inside Window */
-        .project {
-            background: #2a2a2a;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--accent-colour);
+        /* Start Menu */
+        .start-menu {
+            position: absolute;
+            bottom: 55px;
+            left: 10px;
+            width: 250px;
+            background-color: var(--window-bg);
+            border: 1px solid #444;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 9998;
+            padding: 0.5rem 0;
         }
-        .project h4 { margin: 0 0 0.5rem 0; }
-        .project p { margin: 0; font-size: 0.9rem; color: #ccc; }
+        .start-menu.active { display: flex; }
+        .menu-item {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+        }
+        .menu-item:hover { background-color: var(--accent-colour); }
+
+        /* Content Styling */
+        .project-card {
+            background: #1e1e1e;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            border-left: 4px solid var(--accent-colour);
+            border-radius: 4px;
+        }
+        .project-card h4 { margin: 0 0 0.5rem 0; color: #fff; }
+        .project-card p { margin: 0; font-size: 0.9rem; color: #bbb; line-height: 1.5; }
+        .tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            background: #333;
+            padding: 0.2rem 0.5rem;
+            margin-top: 0.8rem;
+            margin-right: 0.5rem;
+            border-radius: 2px;
+        }
     </style>
 </head>
 <body>
 
     <div class="desktop">
-        <div class="icon" onclick="openWindow('Robotics', roboticsData)">
+        <div class="icon" ondblclick="openWindow('robotics-win')">
             <span class="icon-img">⚙️</span>
-            <span class="icon-text">Robotics.dir</span>
+            <span class="icon-text">Robotics</span>
         </div>
-        <div class="icon" onclick="openWindow('Software', softwareData)">
+        <div class="icon" ondblclick="openWindow('software-win')">
             <span class="icon-img">💻</span>
-            <span class="icon-text">Software.dir</span>
+            <span class="icon-text">Software</span>
         </div>
-        <div class="icon" onclick="openWindow('ReadMe', readmeData)">
+        <div class="icon" ondblclick="openWindow('readme-win')">
             <span class="icon-img">📄</span>
             <span class="icon-text">ReadMe.txt</span>
         </div>
     </div>
 
-    <div id="app-window" class="window">
-        <div class="title-bar" id="title-bar">
-            <span id="window-title">Folder</span>
-            <button class="close-btn" onclick="closeWindow()"></button>
+    <div id="robotics-win" class="window" style="top: 10%; left: 10%;">
+        <div class="title-bar">
+            <span class="window-title">C:\MingoLabs\Robotics</span>
+            <div class="window-controls">
+                <button onclick="closeWindow('robotics-win')" class="close-btn">✖</button>
+            </div>
         </div>
-        <div class="window-content" id="window-content"></div>
+        <div class="window-content">
+            <div class="project-card">
+                <h4>Autonomous Rover Mk II</h4>
+                <p>Custom 3D-printed chassis featuring an Arduino Mega core, ultrasonic array, and RPLIDAR A1 for 2D room mapping integration.</p>
+                <span class="tag">C++</span><span class="tag">Hardware</span>
+            </div>
+            <div class="project-card">
+                <h4>Automated Greenhouse Controller</h4>
+                <p>ESP32-based logic board governing soil moisture sensors, temperature probes, and 12v water pump relays.</p>
+                <span class="tag">ESP32</span><span class="tag">Electronics</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="software-win" class="window" style="top: 15%; left: 15%;">
+        <div class="title-bar">
+            <span class="window-title">C:\MingoLabs\Software</span>
+            <div class="window-controls">
+                <button onclick="closeWindow('software-win')" class="close-btn">✖</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-card">
+                <h4>Telemetry Visualisation Dashboard</h4>
+                <p>A full-stack web application designed to ingest serial data from remote hardware and plot real-time graphs using WebSockets.</p>
+                <span class="tag">Python</span><span class="tag">JavaScript</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="readme-win" class="window" style="top: 20%; left: 20%;">
+        <div class="title-bar">
+            <span class="window-title">Notepad - ReadMe.txt</span>
+            <div class="window-controls">
+                <button onclick="closeWindow('readme-win')" class="close-btn">✖</button>
+            </div>
+        </div>
+        <div class="window-content" style="background: #fff; color: #000; font-family: monospace;">
+            <h3>MingoLabs Engineering</h3>
+            <p>System Initialised.</p>
+            <p>Double-click the directories on the desktop to access hardware and software build logs.</p>
+        </div>
+    </div>
+
+    <div id="start-menu" class="start-menu">
+        <div class="menu-item" onclick="openWindow('robotics-win'); toggleStart()">⚙️ Robotics</div>
+        <div class="menu-item" onclick="openWindow('software-win'); toggleStart()">💻 Software</div>
+        <div class="menu-item" onclick="openWindow('readme-win'); toggleStart()">📄 System Info</div>
+        <div style="border-top: 1px solid #444; margin: 0.5rem 0;"></div>
+        <div class="menu-item" onclick="window.location.reload()">🔄 Restart UI</div>
     </div>
 
     <div class="taskbar">
-        <span class="start-btn">MingoLabs OS</span>
+        <button class="start-btn" onclick="toggleStart()">
+            <span style="font-size: 1.2rem;">❖</span> MingoLabs
+        </button>
+        <div class="clock" id="clock">00:00</div>
     </div>
 
     <script>
-        // Data Payloads
-        const roboticsData = `
-            <div class="project">
-                <h4>Autonomous Rover</h4>
-                <p>Custom chassis with ultrasonic sensors and LIDAR for 2D room mapping. C++ / Arduino.</p>
-            </div>
-            <div class="project">
-                <h4>Greenhouse Controller</h4>
-                <p>ESP32 system monitoring soil moisture and operating relays. Electronics / C++.</p>
-            </div>`;
-            
-        const softwareData = `
-            <div class="project">
-                <h4>Telemetry Visualisation</h4>
-                <p>Web dashboard built to graph incoming hardware data in real-time. Python / JS.</p>
-            </div>`;
-            
-        const readmeData = `
-            <h3>Welcome to MingoLabs</h3>
-            <p>This is my engineering portfolio showcasing builds in software, robotics, and electronics.</p>
-            <p>Select a directory on the desktop to view projects.</p>`;
+        let zIndexCounter = 10;
 
-        // Window Logic
-        const appWindow = document.getElementById('app-window');
-        const windowTitle = document.getElementById('window-title');
-        const windowContent = document.getElementById('window-content');
-
-        function openWindow(title, content) {
-            windowTitle.textContent = title;
-            windowContent.innerHTML = content;
-            appWindow.classList.add('active');
+        // Window Management
+        function openWindow(id) {
+            const win = document.getElementById(id);
+            win.classList.add('active');
+            focusWindow(win);
         }
 
-        function closeWindow() {
-            appWindow.classList.remove('active');
+        function closeWindow(id) {
+            document.getElementById(id).classList.remove('active');
         }
 
-        // Drag Logic
-        const titleBar = document.getElementById('title-bar');
-        let isDragging = false;
-        let offsetX, offsetY;
+        function focusWindow(win) {
+            zIndexCounter++;
+            win.style.zIndex = zIndexCounter;
+        }
 
-        titleBar.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            offsetX = e.clientX - appWindow.getBoundingClientRect().left;
-            offsetY = e.clientY - appWindow.getBoundingClientRect().top;
+        // Apply focus and drag events to all windows
+        document.querySelectorAll('.window').forEach(win => {
+            win.addEventListener('mousedown', () => focusWindow(win));
+            
+            const titleBar = win.querySelector('.title-bar');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - win.getBoundingClientRect().left;
+                offsetY = e.clientY - win.getBoundingClientRect().top;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                win.style.left = (e.clientX - offsetX) + 'px';
+                win.style.top = (e.clientY - offsetY) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            appWindow.style.left = (e.clientX - offsetX) + 'px';
-            appWindow.style.top = (e.clientY - offsetY) + 'px';
+        // Start Menu
+        function toggleStart() {
+            const menu = document.getElementById('start-menu');
+            menu.classList.toggle('active');
+        }
+
+        // Close start menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('start-menu');
+            const startBtn = document.querySelector('.start-btn');
+            if (!menu.contains(e.target) && !startBtn.contains(e.target)) {
+                menu.classList.remove('active');
+            }
         });
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock').textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
     </script>
 </body>
 </html>
