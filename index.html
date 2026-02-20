@@ -38,17 +38,25 @@
             pointer-events: none; background-color: transparent;
         }
 
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 10px rgba(246, 161, 90, 0.1); }
+            50% { box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(246, 161, 90, 0.4); }
+            100% { box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 10px rgba(246, 161, 90, 0.1); }
+        }
+
         #splash-box {
             background: rgba(30, 30, 30, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px; padding: 3rem 4rem; text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             backdrop-filter: blur(10px); pointer-events: auto;
+            animation: pulse-glow 3s infinite ease-in-out;
             transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1), opacity 4s ease 1s;
         }
         
         #splash-box.booting {
+            animation: none;
             transform: scale(4); opacity: 0; pointer-events: none;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         
         .logo-placeholder { font-size: 4rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 2rem; }
@@ -56,8 +64,9 @@
         .boot-btn {
             background-color: var(--accent-colour); color: #111; border: none;
             padding: 0.8rem 2rem; font-size: 1.2rem; font-weight: bold;
-            border-radius: 4px; cursor: pointer;
+            border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
         }
+        .boot-btn:hover { background-color: #e08b46; }
 
         #desktop-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -107,9 +116,9 @@
         </div>
 
         <div class="dock">
-            <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" title="Robotics">⚙️</div>
-            <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" title="Software">💻</div>
-            <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" title="System Info">📄</div>
+            <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" onmouseenter="playHoverSound()" title="Robotics">⚙️</div>
+            <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" onmouseenter="playHoverSound()" title="Software">💻</div>
+            <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" onmouseenter="playHoverSound()" title="System Info">📄</div>
         </div>
 
         <div id="robotics-win" class="window" style="top: 15%; left: 15%;">
@@ -155,7 +164,14 @@
     <script src="os-background.js"></script>
 
     <script>
+        let audioCtx;
+
         function bootSystem() {
+            // Initialise audio context on user interaction to bypass browser restrictions
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
             const audio = new Audio('login.mp3');
             audio.play().catch(e => console.log("Audio playback failed:", e));
 
@@ -165,6 +181,23 @@
             setTimeout(() => {
                 document.getElementById('splash-wrapper').style.display = 'none';
             }, 6000);
+        }
+
+        function playHoverSound() {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch (e) {}
         }
 
         let zIndexCounter = 100;
