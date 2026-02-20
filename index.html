@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MingOS</title>
+    <link rel="icon" type="image/x-icon" href="icon.ico">
     <style>
         :root {
             --bg-base: #1E3A5F;
@@ -38,7 +39,6 @@
             perspective: 1000px;
         }
 
-        /* Separate pulse container to avoid transform conflicts */
         .pulse-container {
             animation: aggressive-pulse 4s infinite ease-in-out;
             will-change: transform;
@@ -59,15 +59,21 @@
             backface-visibility: hidden;
         }
         
-        /* The "Blow up" effect - smooth zoom and fade */
         .booting #splash-box {
             transform: scale(4);
             opacity: 0;
             pointer-events: none;
         }
 
-        .logo-placeholder { font-size: 4.5rem; font-weight: bold; letter-spacing: 4px; margin-bottom: 2rem; }
-        .logo-placeholder span { color: var(--accent-colour); }
+        .splash-logo { 
+            max-width: 300px; 
+            height: auto; 
+            margin-bottom: 2rem; 
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            filter: drop-shadow(0 0 15px rgba(246, 161, 90, 0.5)); 
+        }
         
         .boot-btn {
             background-color: var(--accent-colour); color: #111; border: none;
@@ -109,7 +115,7 @@
     <div id="splash-wrapper">
         <div class="pulse-container" id="pulse-box">
             <div id="splash-box">
-                <div class="logo-placeholder">Ming<span>OS</span></div>
+                <img src="logo.png" alt="MingOS Logo" class="splash-logo">
                 <button class="boot-btn" onclick="bootSystem()">Initialise</button>
             </div>
         </div>
@@ -151,11 +157,9 @@
             const loginAudio = new Audio('login.mp3');
             loginAudio.play().catch(e => {});
 
-            // Stop the pulsing animation immediately
             const pulseContainer = document.getElementById('pulse-box');
             pulseContainer.style.animation = 'none';
 
-            // Trigger the zoom-out transition
             document.getElementById('splash-wrapper').classList.add('booting');
             document.getElementById('desktop-ui').classList.add('active');
             
