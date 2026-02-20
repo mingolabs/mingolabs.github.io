@@ -6,248 +6,148 @@
     <title>MingOS</title>
     <style>
         :root {
-            --bg-base: #1E3A5F; /* Vibrant Teal Base */
+            --bg-base: #1E3A5F;
             --panel-bg: rgba(30, 30, 30, 0.85);
             --window-bg: #2b2a29;
             --text-colour: #fdfdfd;
-            --accent-colour: #f6a15a; /* Pop!_OS Orange */
+            --accent-colour: #f6a15a;
             --title-bar: #383635;
             --dock-bg: rgba(40, 40, 40, 0.7);
         }
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+            margin: 0; padding: 0; height: 100%;
             font-family: 'Fira Sans', system-ui, sans-serif;
-            overflow: hidden;
-            background-color: var(--bg-base);
-            color: var(--text-colour);
-            user-select: none;
+            overflow: hidden; background-color: var(--bg-base);
+            color: var(--text-colour); user-select: none;
         }
 
-        /* Fluid Background */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+        #bg-fluid {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2; filter: blur(120px); transform: scale(1.2); opacity: 0.85;
+        }
+        
+        #bg-particles {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -1;
-            filter: blur(120px);
-            transform: scale(1.2); /* Prevents blurred edges bleeding inward */
-            opacity: 0.85;
         }
 
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #222;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            transition: opacity 0.4s ease;
+        #splash-wrapper {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 99999; display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
         }
-        .logo-placeholder {
-            font-size: 4rem;
-            font-weight: bold;
-            color: var(--text-colour);
-            letter-spacing: 2px;
-            margin-bottom: 2rem;
+        
+        #splash-box {
+            background: rgba(30, 30, 30, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 3rem 4rem; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px); pointer-events: auto;
+            transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), opacity 3s ease;
         }
+        
+        #splash-box.booting {
+            transform: scale(2.5); opacity: 0; pointer-events: none;
+        }
+        
+        .logo-placeholder { font-size: 4rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 2rem; }
         .logo-placeholder span { color: var(--accent-colour); }
         .boot-btn {
-            background-color: var(--accent-colour);
-            color: #111;
-            border: none;
-            padding: 0.8rem 2rem;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
+            background-color: var(--accent-colour); color: #111; border: none;
+            padding: 0.8rem 2rem; font-size: 1.2rem; font-weight: bold;
+            border-radius: 4px; cursor: pointer;
         }
 
-        .top-bar {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 28px;
-            background-color: var(--panel-bg);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
-            box-sizing: border-box;
-            z-index: 9000;
-            font-size: 0.9rem;
-            font-weight: 500;
-            backdrop-filter: blur(10px);
+        #desktop-ui {
+            opacity: 0; transition: opacity 3s ease 1s; pointer-events: none;
+            height: 100%; width: 100%;
         }
-        .top-bar-centre { position: absolute; left: 50%; transform: translateX(-50%); }
-
-        .dock {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--dock-bg);
-            padding: 0.5rem;
-            border-radius: 16px;
-            display: flex;
-            gap: 0.8rem;
-            z-index: 9000;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-        }
-        .dock-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s;
-        }
-        .dock-icon:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateY(-8px) scale(1.05);
-        }
-        .dock-icon.active::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            width: 6px;
-            height: 6px;
-            background-color: var(--accent-colour);
-            border-radius: 50%;
-        }
-
-        .window {
-            position: absolute;
-            width: 600px;
-            background-color: var(--window-bg);
-            border-radius: 10px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            transition: border-color 0.15s ease;
-        }
-        .window.active { display: flex; }
         
-        /* Pop!_OS 24.04 Active Hint */
-        .window.active-focus {
-            border-color: var(--accent-colour);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        #desktop-ui.active {
+            opacity: 1; pointer-events: auto;
         }
 
-        .title-bar {
-            background-color: var(--title-bar);
-            padding: 0.6rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: move;
-        }
+        .top-bar { position: absolute; top: 0; width: 100%; height: 28px; background-color: var(--panel-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; box-sizing: border-box; z-index: 9000; font-size: 0.9rem; font-weight: 500; backdrop-filter: blur(10px); }
+        .top-bar-centre { position: absolute; left: 50%; transform: translateX(-50%); }
+        .dock { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background-color: var(--dock-bg); padding: 0.5rem; border-radius: 16px; display: flex; gap: 0.8rem; z-index: 9000; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); }
+        .dock-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s; }
+        .dock-icon:hover { background-color: rgba(255, 255, 255, 0.1); transform: translateY(-8px) scale(1.05); }
+        .dock-icon.active::after { content: ''; position: absolute; bottom: -6px; width: 6px; height: 6px; background-color: var(--accent-colour); border-radius: 50%; }
+        .window { position: absolute; width: 600px; background-color: var(--window-bg); border-radius: 10px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); display: none; flex-direction: column; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.05); transition: border-color 0.15s ease; }
+        .window.active { display: flex; }
+        .window.active-focus { border-color: var(--accent-colour); box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
+        .title-bar { background-color: var(--title-bar); padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center; cursor: move; }
         .window-title { font-weight: 600; font-size: 0.95rem; pointer-events: none; }
-        .close-btn {
-            background: #e95420;
-            border: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .window-content {
-            padding: 1.5rem;
-            min-height: 300px;
-            overflow-y: auto;
-        }
-
-        .project-card {
-            background: #3a3837;
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
-            border-radius: 6px;
-            border-left: 4px solid var(--accent-colour);
-        }
+        .close-btn { background: #e95420; border: none; width: 14px; height: 14px; border-radius: 50%; cursor: pointer; }
+        .window-content { padding: 1.5rem; min-height: 300px; overflow-y: auto; }
+        .project-card { background: #3a3837; padding: 1.2rem; margin-bottom: 1.2rem; border-radius: 6px; border-left: 4px solid var(--accent-colour); }
         .project-card h4 { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
         .project-card p { margin: 0; font-size: 0.95rem; color: #d0d0d0; line-height: 1.5; }
-        .tag {
-            display: inline-block;
-            font-size: 0.75rem;
-            background: #222;
-            padding: 0.3rem 0.6rem;
-            margin-top: 0.8rem;
-            margin-right: 0.5rem;
-            border-radius: 4px;
-        }
+        .tag { display: inline-block; font-size: 0.75rem; background: #222; padding: 0.3rem 0.6rem; margin-top: 0.8rem; margin-right: 0.5rem; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <canvas id="bg-canvas"></canvas>
+    <canvas id="bg-fluid"></canvas>
+    <canvas id="bg-particles"></canvas>
 
-    <div id="splash-screen">
-        <div class="logo-placeholder">Ming<span>OS</span></div>
-        <button class="boot-btn" onclick="bootSystem()">Power On</button>
-    </div>
-
-    <div class="top-bar">
-        <div>Activities</div>
-        <div class="top-bar-centre" id="clock">00:00</div>
-        <div>⚙️ 🔋 📶</div>
-    </div>
-
-    <div class="dock">
-        <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" title="Robotics">⚙️</div>
-        <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" title="Software">💻</div>
-        <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" title="System Info">📄</div>
-    </div>
-
-    <div id="robotics-win" class="window" style="top: 15%; left: 15%;">
-        <div class="title-bar">
-            <span class="window-title">Robotics</span>
-            <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="close-btn"></button>
+    <div id="splash-wrapper">
+        <div id="splash-box">
+            <div class="logo-placeholder">Ming<span>OS</span></div>
+            <button class="boot-btn" onclick="bootSystem()">Power On</button>
         </div>
-        <div class="window-content">
-            <div class="project-card">
-                <h4>Autonomous Rover Mk II</h4>
-                <p>Custom 3D-printed chassis featuring an Arduino Mega core, ultrasonic array, and RPLIDAR A1 for 2D room mapping integration.</p>
-                <span class="tag">C++</span><span class="tag">Hardware</span>
+    </div>
+
+    <div id="desktop-ui">
+        <div class="top-bar">
+            <div>Activities</div>
+            <div class="top-bar-centre" id="clock">00:00</div>
+            <div>⚙️ 🔋 📶</div>
+        </div>
+
+        <div class="dock">
+            <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" title="Robotics">⚙️</div>
+            <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" title="Software">💻</div>
+            <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" title="System Info">📄</div>
+        </div>
+
+        <div id="robotics-win" class="window" style="top: 15%; left: 15%;">
+            <div class="title-bar">
+                <span class="window-title">Robotics</span>
+                <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="close-btn"></button>
+            </div>
+            <div class="window-content">
+                <div class="project-card">
+                    <h4>Autonomous Rover Mk II</h4>
+                    <p>Custom 3D-printed chassis featuring an Arduino Mega core, ultrasonic array, and RPLIDAR A1 for 2D room mapping integration.</p>
+                    <span class="tag">C++</span><span class="tag">Hardware</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="software-win" class="window" style="top: 20%; left: 20%;">
-        <div class="title-bar">
-            <span class="window-title">Software</span>
-            <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="close-btn"></button>
-        </div>
-        <div class="window-content">
-            <div class="project-card">
-                <h4>Telemetry Dashboard</h4>
-                <p>Full-stack web application designed to ingest serial data from remote hardware and plot real-time graphs using WebSockets.</p>
-                <span class="tag">Python</span><span class="tag">JavaScript</span>
+        <div id="software-win" class="window" style="top: 20%; left: 20%;">
+            <div class="title-bar">
+                <span class="window-title">Software</span>
+                <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="close-btn"></button>
+            </div>
+            <div class="window-content">
+                <div class="project-card">
+                    <h4>Telemetry Dashboard</h4>
+                    <p>Full-stack web application designed to ingest serial data from remote hardware and plot real-time graphs using WebSockets.</p>
+                    <span class="tag">Python</span><span class="tag">JavaScript</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="readme-win" class="window" style="top: 10%; left: 50%;">
-        <div class="title-bar">
-            <span class="window-title">System_Info.txt</span>
-            <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button>
-        </div>
-        <div class="window-content" style="background: #1e1e1e; font-family: monospace;">
-            <h3>MingOS Environment</h3>
-            <p>System Initialised.</p>
+        <div id="readme-win" class="window" style="top: 10%; left: 50%;">
+            <div class="title-bar">
+                <span class="window-title">System_Info.txt</span>
+                <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button>
+            </div>
+            <div class="window-content" style="background: #1e1e1e; font-family: monospace;">
+                <h3>MingOS Environment</h3>
+                <p>System Initialised.</p>
+            </div>
         </div>
     </div>
 
@@ -255,24 +155,11 @@
 
     <script>
         function bootSystem() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.1);
-            } catch (e) {}
+            const audio = new Audio('login.mp3');
+            audio.play().catch(e => console.log("Audio playback failed:", e));
 
-            const splash = document.getElementById('splash-screen');
-            splash.style.opacity = '0';
-            setTimeout(() => { splash.style.display = 'none'; }, 400);
+            document.getElementById('splash-box').classList.add('booting');
+            document.getElementById('desktop-ui').classList.add('active');
         }
 
         let zIndexCounter = 100;
@@ -290,10 +177,8 @@
         }
 
         function focusWindow(win) {
-            // Apply Pop!_OS Active Focus styling
             document.querySelectorAll('.window').forEach(w => w.classList.remove('active-focus'));
             win.classList.add('active-focus');
-            
             zIndexCounter++;
             win.style.zIndex = zIndexCounter;
         }
