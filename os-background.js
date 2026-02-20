@@ -97,7 +97,7 @@ function initShapes() {
 
 function initParticles() {
     particlesArray = [];
-    let numberOfParticles = (particleCanvas.width * particleCanvas.height) / 90000;
+    let numberOfParticles = (particleCanvas.width * particleCanvas.height) / 9000;
     for (let i = 0; i < numberOfParticles; i++) {
         particlesArray.push(new Particle());
     }
