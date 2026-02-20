@@ -24,30 +24,36 @@
         #bg-fluid {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 1; filter: blur(120px); transform: scale(1.2); opacity: 0.85;
+            pointer-events: none;
         }
         
         #bg-particles {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 2;
+            z-index: 2; pointer-events: none;
         }
 
         #splash-wrapper {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 99999; display: flex; align-items: center; justify-content: center;
-            pointer-events: none;
+            pointer-events: none; background-color: rgba(30, 58, 95, 1);
+            transition: background-color 3s ease 1s;
         }
         
+        #splash-wrapper.booting {
+            background-color: transparent;
+        }
+
         #splash-box {
             background: rgba(30, 30, 30, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px; padding: 3rem 4rem; text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             backdrop-filter: blur(10px); pointer-events: auto;
-            transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), opacity 3s ease;
+            transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1), opacity 4s ease 1s;
         }
         
         #splash-box.booting {
-            transform: scale(2.5); opacity: 0; pointer-events: none;
+            transform: scale(4); opacity: 0; pointer-events: none;
         }
         
         .logo-placeholder { font-size: 4rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 2rem; }
@@ -60,7 +66,7 @@
 
         #desktop-ui {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; opacity: 0; transition: opacity 3s ease 1s; pointer-events: none;
+            z-index: 10; opacity: 0; transition: opacity 4s ease 3s; pointer-events: none;
         }
         
         #desktop-ui.active {
@@ -151,15 +157,20 @@
         </div>
     </div>
 
-    <script src="background.js"></script>
+    <script src="os-background.js"></script>
 
     <script>
         function bootSystem() {
             const audio = new Audio('login.mp3');
             audio.play().catch(e => console.log("Audio playback failed:", e));
 
+            document.getElementById('splash-wrapper').classList.add('booting');
             document.getElementById('splash-box').classList.add('booting');
             document.getElementById('desktop-ui').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('splash-wrapper').style.display = 'none';
+            }, 6000);
         }
 
         let zIndexCounter = 100;

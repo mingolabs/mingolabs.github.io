@@ -64,7 +64,7 @@ class Particle {
     constructor() {
         this.x = Math.random() * particleCanvas.width;
         this.y = Math.random() * particleCanvas.height;
-        this.size = Math.random() * 2 + 1;
+        this.size = Math.random() * 3 + 1.5;
         this.speedX = (Math.random() * 1) - 0.5;
         this.speedY = (Math.random() * 1) - 0.5;
     }
@@ -77,7 +77,7 @@ class Particle {
     }
     
     draw() {
-        particleCtx.fillStyle = 'rgba(246, 161, 90, 0.8)';
+        particleCtx.fillStyle = 'rgba(246, 161, 90, 0.9)';
         particleCtx.beginPath();
         particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         particleCtx.fill();
@@ -123,10 +123,10 @@ function animateBackground() {
             const dy = particlesArray[i].y - particlesArray[j].y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if (distance < 100) {
+            if (distance < 150) {
                 particleCtx.beginPath();
-                particleCtx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/100})`;
-                particleCtx.lineWidth = 0.5;
+                particleCtx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/150})`;
+                particleCtx.lineWidth = 0.6;
                 particleCtx.moveTo(particlesArray[i].x, particlesArray[i].y);
                 particleCtx.lineTo(particlesArray[j].x, particlesArray[j].y);
                 particleCtx.stroke();
