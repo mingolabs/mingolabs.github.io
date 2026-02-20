@@ -86,7 +86,7 @@ class Particle {
 
 function initShapes() {
     fluidShapesArray = [];
-    let numberOfShapes = Math.floor((fluidCanvas.width * fluidCanvas.height) / 80000); 
+    let numberOfShapes = Math.floor((fluidCanvas.width * fluidCanvas.height) / 50000); 
     if (numberOfShapes < 4) numberOfShapes = 4;
     if (numberOfShapes > 12) numberOfShapes = 12;
     
