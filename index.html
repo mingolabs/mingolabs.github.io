@@ -3,152 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MingoLabs | Engineering Portfolio</title>
+    <title>MingoLabs OS</title>
     <style>
         :root {
-            --bg-colour: #121212;
+            --desktop-bg: #0f4c81;
+            --window-bg: #1e1e1e;
             --text-colour: #f0f0f0;
-            --card-bg: #1e1e1e;
             --accent-colour: #00d2ff;
+            --title-bar: #333;
         }
-        body {
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
             font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-colour);
-            color: var(--text-colour);
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
-            line-height: 1.6;
-        }
-        header { 
-            text-align: center; 
-            margin-bottom: 3rem; 
-            border-bottom: 1px solid #333; 
-            padding-bottom: 2rem; 
-        }
-        h1 { 
-            color: var(--accent-colour); 
-            margin-bottom: 0.5rem; 
-        }
-        .filters {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        button {
-            background: transparent;
-            color: var(--text-colour);
-            border: 1px solid var(--accent-colour);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        button:hover, button.active {
-            background: var(--accent-colour);
-            color: #000;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            border-top: 3px solid var(--accent-colour);
             overflow: hidden;
+            background-color: var(--desktop-bg);
+            color: var(--text-colour);
+            user-select: none;
+        }
+        
+        /* Desktop Icons */
+        .desktop {
+            padding: 1rem;
             display: flex;
             flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-start;
         }
-        .card-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #333;
-            border-bottom: 1px solid #444;
+        .icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
         }
-        .card-content {
+        .icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .icon-img {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .icon-text {
+            font-size: 0.85rem;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Window System */
+        .window {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 500px;
+            background-color: var(--window-bg);
+            border: 1px solid var(--title-bar);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .window.active {
+            display: flex;
+        }
+        .title-bar {
+            background-color: var(--title-bar);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            border-bottom: 2px solid var(--accent-colour);
+        }
+        .close-btn {
+            background: #ff5f56;
+            border: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .window-content {
             padding: 1.5rem;
+            min-height: 200px;
         }
-        .tag {
-            font-size: 0.8rem;
-            background: #333;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: inline-block;
-            margin-top: 1rem;
-            margin-right: 0.5rem;
+
+        /* Taskbar */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            border-top: 1px solid #333;
+            z-index: 20;
         }
-        .hidden { display: none; }
+        .start-btn {
+            font-weight: bold;
+            color: var(--accent-colour);
+            cursor: pointer;
+        }
+
+        /* Project Cards inside Window */
+        .project {
+            background: #2a2a2a;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent-colour);
+        }
+        .project h4 { margin: 0 0 0.5rem 0; }
+        .project p { margin: 0; font-size: 0.9rem; color: #ccc; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>MingoLabs</h1>
-        <p>Software, Robotics, and Electronics Builds</p>
-    </header>
-
-    <div class="filters">
-        <button class="active" onclick="filterProjects('all', this)">All</button>
-        <button onclick="filterProjects('robotics', this)">Robotics</button>
-        <button onclick="filterProjects('software', this)">Software</button>
-        <button onclick="filterProjects('electronics', this)">Electronics</button>
+    <div class="desktop">
+        <div class="icon" onclick="openWindow('Robotics', roboticsData)">
+            <span class="icon-img">⚙️</span>
+            <span class="icon-text">Robotics.dir</span>
+        </div>
+        <div class="icon" onclick="openWindow('Software', softwareData)">
+            <span class="icon-img">💻</span>
+            <span class="icon-text">Software.dir</span>
+        </div>
+        <div class="icon" onclick="openWindow('ReadMe', readmeData)">
+            <span class="icon-img">📄</span>
+            <span class="icon-text">ReadMe.txt</span>
+        </div>
     </div>
 
-    <main class="grid" id="projectGrid">
-        
-        <div class="card" data-category="robotics electronics">
-            <img src="image-placeholder.jpg" alt="Autonomous Rover" class="card-img">
-            <div class="card-content">
-                <h3>Autonomous Rover</h3>
-                <p>Custom chassis with ultrasonic sensors and LIDAR for 2D room mapping.</p>
-                <span class="tag">Robotics</span> <span class="tag">Electronics</span>
-            </div>
+    <div id="app-window" class="window">
+        <div class="title-bar" id="title-bar">
+            <span id="window-title">Folder</span>
+            <button class="close-btn" onclick="closeWindow()"></button>
         </div>
+        <div class="window-content" id="window-content"></div>
+    </div>
 
-        <div class="card" data-category="software">
-            <img src="image-placeholder.jpg" alt="Telemetry Visualisation" class="card-img">
-            <div class="card-content">
-                <h3>Telemetry Visualisation</h3>
-                <p>A web dashboard built to graph incoming hardware data in real-time.</p>
-                <span class="tag">Software</span>
-            </div>
-        </div>
-
-        <div class="card" data-category="electronics software">
-            <img src="image-placeholder.jpg" alt="Greenhouse Controller" class="card-img">
-            <div class="card-content">
-                <h3>Greenhouse Controller</h3>
-                <p>Microcontroller-based system monitoring soil moisture and operating relays.</p>
-                <span class="tag">Electronics</span> <span class="tag">Software</span>
-            </div>
-        </div>
-
-    </main>
+    <div class="taskbar">
+        <span class="start-btn">MingoLabs OS</span>
+    </div>
 
     <script>
-        function filterProjects(category, buttonElement) {
-            const cards = document.querySelectorAll('.card');
-            const buttons = document.querySelectorAll('.filters button');
+        // Data Payloads
+        const roboticsData = `
+            <div class="project">
+                <h4>Autonomous Rover</h4>
+                <p>Custom chassis with ultrasonic sensors and LIDAR for 2D room mapping. C++ / Arduino.</p>
+            </div>
+            <div class="project">
+                <h4>Greenhouse Controller</h4>
+                <p>ESP32 system monitoring soil moisture and operating relays. Electronics / C++.</p>
+            </div>`;
             
-            buttons.forEach(btn => btn.classList.remove('active'));
-            buttonElement.classList.add('active');
+        const softwareData = `
+            <div class="project">
+                <h4>Telemetry Visualisation</h4>
+                <p>Web dashboard built to graph incoming hardware data in real-time. Python / JS.</p>
+            </div>`;
+            
+        const readmeData = `
+            <h3>Welcome to MingoLabs</h3>
+            <p>This is my engineering portfolio showcasing builds in software, robotics, and electronics.</p>
+            <p>Select a directory on the desktop to view projects.</p>`;
 
-            cards.forEach(card => {
-                const categories = card.getAttribute('data-category').split(' ');
-                if (category === 'all' || categories.includes(category)) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
+        // Window Logic
+        const appWindow = document.getElementById('app-window');
+        const windowTitle = document.getElementById('window-title');
+        const windowContent = document.getElementById('window-content');
+
+        function openWindow(title, content) {
+            windowTitle.textContent = title;
+            windowContent.innerHTML = content;
+            appWindow.classList.add('active');
         }
+
+        function closeWindow() {
+            appWindow.classList.remove('active');
+        }
+
+        // Drag Logic
+        const titleBar = document.getElementById('title-bar');
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        titleBar.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - appWindow.getBoundingClientRect().left;
+            offsetY = e.clientY - appWindow.getBoundingClientRect().top;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            appWindow.style.left = (e.clientX - offsetX) + 'px';
+            appWindow.style.top = (e.clientY - offsetY) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
     </script>
 </body>
 </html>
