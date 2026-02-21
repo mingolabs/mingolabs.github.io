@@ -1,7 +1,7 @@
 function initStatusIcons() {
     const statusDiv = document.querySelector('.top-bar div:last-child');
     
-    // Force perfect vertical alignment and uniform spacing on the parent container
+    // Force perfect vertical alignment and uniform spacing
     statusDiv.style.display = 'flex';
     statusDiv.style.alignItems = 'center';
     statusDiv.style.gap = '16px'; 
@@ -13,7 +13,7 @@ function initStatusIcons() {
         }
     });
 
-    // Fix the weather widget's internal alignment and remove its conflicting margin
+    // Fix the weather widget's internal alignment
     const weatherSpan = statusDiv.querySelector('span');
     if (weatherSpan) {
         weatherSpan.style.marginRight = '0';
@@ -22,13 +22,97 @@ function initStatusIcons() {
         weatherSpan.style.gap = '6px';
     }
 
+    // Global Audio Mute Logic
+    window.mingosMuted = false;
+    const originalPlay = HTMLAudioElement.prototype.play;
+    HTMLAudioElement.prototype.play = function() {
+        this.muted = window.mingosMuted;
+        return originalPlay.call(this);
+    };
+
+    // Inject CSS for the dropdown and toggle switch
+    const style = document.createElement('style');
+    style.textContent = `
+        .settings-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 30px; /* Matches top-bar height to prevent hover gaps */
+        }
+        .settings-dropdown {
+            position: absolute;
+            top: 28px;
+            right: -10px;
+            width: 220px;
+            background: rgba(40, 40, 40, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            z-index: 10000;
+        }
+        .settings-wrapper:hover .settings-dropdown {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        .dropdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 0.8rem;
+            color: #fdfdfd;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: var(--accent-colour);
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+        .toggle-switch.muted {
+            background: #666;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 18px;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        .toggle-switch.muted::after {
+            left: 2px;
+        }
+    `;
+    document.head.appendChild(style);
+
     // Create a flex container for the new SVG icons
     const iconContainer = document.createElement('span');
     iconContainer.style.display = 'flex';
     iconContainer.style.alignItems = 'center';
     iconContainer.style.gap = '16px';
 
-    // SVG Generators (added display: block to remove descender gaps)
+    // SVG Generators
     const getWifiIcon = (bars) => {
         const op1 = bars > 0 ? 1 : 0.2;
         const op2 = bars > 1 ? 1 : 0.2;
@@ -55,18 +139,50 @@ function initStatusIcons() {
         </svg>`;
     };
 
-    const settingsIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fdfdfd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer; transition: stroke 0.2s; display: block;" onmouseenter="this.style.stroke='var(--accent-colour)'" onmouseleave="this.style.stroke='#fdfdfd'"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+    const settingsIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fdfdfd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:default; transition: stroke 0.2s; display: block;" onmouseenter="this.style.stroke='var(--accent-colour)'" onmouseleave="this.style.stroke='#fdfdfd'"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
 
     const wifiSpan = document.createElement('span');
     const batterySpan = document.createElement('span');
+    
+    // Create the wrapper for Settings + Dropdown
     const settingsSpan = document.createElement('span');
+    settingsSpan.className = 'settings-wrapper';
+    
+    const iconEl = document.createElement('div');
+    iconEl.innerHTML = settingsIcon;
+    settingsSpan.appendChild(iconEl);
+
+    // Build the Dropdown Menu
+    const dropdown = document.createElement('div');
+    dropdown.className = 'settings-dropdown';
+    
+    // Mute Toggle Button
+    const muteItem = document.createElement('div');
+    muteItem.className = 'dropdown-item';
+    muteItem.innerHTML = `
+        <span>System Sounds</span>
+        <div class="toggle-switch" id="mute-toggle"></div>
+    `;
+    
+    muteItem.onclick = (e) => {
+        e.stopPropagation();
+        window.mingosMuted = !window.mingosMuted;
+        const toggle = document.getElementById('mute-toggle');
+        
+        if (window.mingosMuted) {
+            toggle.classList.add('muted');
+        } else {
+            toggle.classList.remove('muted');
+            if (typeof playRandomPop === 'function') playRandomPop();
+        }
+    };
+
+    dropdown.appendChild(muteItem);
+    settingsSpan.appendChild(dropdown);
     
     // Ensure wrappers wrap tightly around the block SVGs
     wifiSpan.style.display = 'flex';
     batterySpan.style.display = 'flex';
-    settingsSpan.style.display = 'flex';
-
-    settingsSpan.innerHTML = settingsIcon;
     
     iconContainer.appendChild(wifiSpan);
     iconContainer.appendChild(batterySpan);
