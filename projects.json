@@ -1,0 +1,43 @@
+[
+  {
+    "id": "rover-mk2",
+    "title": "Autonomous Rover Mk II",
+    "category": "robotics",
+    "date": "2025-11-15",
+    "pinned": true,
+    "hoverImages": [
+      "robotics/rover-mk2/thumb1.png",
+      "robotics/rover-mk2/thumb2.png",
+      "robotics/rover-mk2/thumb3.png"
+    ],
+    "contentFile": "robotics/rover-mk2/index.html",
+    "summary": "RPLIDAR integration and obstacle avoidance."
+  },
+  {
+    "id": "telemetry-dash",
+    "title": "Telemetry Dashboard",
+    "category": "software",
+    "date": "2026-01-10",
+    "pinned": false,
+    "hoverImages": [
+      "software/telemetry-dash/thumb1.png",
+      "software/telemetry-dash/thumb2.png"
+    ],
+    "contentFile": "software/telemetry-dash/readme.md",
+    "summary": "WebSockets and Python real-time data visualisation."
+  },
+  {
+    "id": "arm-kinematics",
+    "title": "6-DOF Arm Kinematics",
+    "category": "robotics",
+    "date": "2025-08-22",
+    "pinned": false,
+    "hoverImages": [
+      "robotics/arm-kinematics/thumb1.png",
+      "robotics/arm-kinematics/thumb2.png",
+      "robotics/arm-kinematics/thumb2.png"
+    ],
+    "contentFile": "robotics/arm-kinematics/index.html",
+    "summary": "Inverse kinematics solver for a custom 3D printed arm."
+  }
+]
