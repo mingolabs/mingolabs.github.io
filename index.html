@@ -133,18 +133,23 @@
         .window.active { display: flex; }
         .window.active-focus { border-color: var(--accent-colour); }
         
+        /* Dragging State: Kills transitions so dragging is 1:1 with the mouse */
+        .window.dragging {
+            transition: none !important;
+        }
+        
         /* Minimised & Maximised States */
         .window.minimised { transform: scale(0.4) translateY(300px); opacity: 0; pointer-events: none; }
         .window.maximised { top: 30px !important; left: 0 !important; width: 100vw !important; height: calc(100vh - 30px) !important; border-radius: 0; border: none; }
         
         /* Window Controls */
-        .title-bar { background-color: var(--title-bar); padding: 0.7rem 1.2rem; display: flex; justify-content: space-between; align-items: center; cursor: move; }
+        .title-bar { background-color: var(--title-bar); padding: 0.7rem 1.2rem; display: flex; justify-content: space-between; align-items: center; cursor: default; }
         .window-controls { display: flex; gap: 8px; align-items: center; }
         .win-btn { width: 13px; height: 13px; border-radius: 50%; border: none; cursor: pointer; }
-        .min-btn { background: #ffbd2e; }
-        .max-btn { background: #28c940; }
+        .min-btn { background: #ffbd2e; border-radius: 0; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+        .max-btn { background: #28c940; border-radius: 0; }
         .close-btn { background: #ff5f57; }
-        
+                
         /* Markdown Content Styling */
         .window-content { padding: 1.8rem; min-height: 320px; overflow-y: auto; background: #2b2a29; user-select: text; flex-grow: 1; }
         .window-content h1, .window-content h2, .window-content h3 { color: var(--accent-colour); margin-top: 0; }
@@ -358,21 +363,18 @@
         function toggleWindow(winId, dockElement) {
             const win = document.getElementById(winId);
             if (!win.classList.contains('active')) {
-                // Open newly if closed
                 win.classList.add('active');
                 win.classList.remove('minimised');
                 if (dockElement) dockElement.classList.add('active');
                 focusWindow(win);
             } else if (win.classList.contains('minimised')) {
-                // Restore from dock
                 win.classList.remove('minimised');
                 focusWindow(win);
             } else {
-                // It is currently open on desktop
                 if (win.classList.contains('active-focus')) {
-                    minimiseWindow(winId); // Minimise if already the top window
+                    minimiseWindow(winId);
                 } else {
-                    focusWindow(win); // Bring to front if behind other apps
+                    focusWindow(win);
                 }
             }
         }
@@ -388,7 +390,7 @@
             const win = document.getElementById(winId);
             const dock = document.getElementById(dockElementId);
             win.classList.remove('active');
-            win.classList.remove('minimised'); // Clean up state
+            win.classList.remove('minimised');
             if (dock) dock.classList.remove('active');
         }
 
@@ -415,6 +417,7 @@
                 if (e.target.classList.contains('win-btn')) return;
                 
                 isDragging = true;
+                win.classList.add('dragging'); // Temporarily removes transitions
                 offsetX = e.clientX - win.getBoundingClientRect().left;
                 offsetY = e.clientY - win.getBoundingClientRect().top;
                 focusWindow(win);
@@ -422,14 +425,16 @@
             
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
-                if (win.classList.contains('maximised')) return; // Disable drag when maximised
+                if (win.classList.contains('maximised')) return;
                 win.style.left = (e.clientX - offsetX) + 'px';
                 win.style.top = (e.clientY - offsetY) + 'px';
             });
             
-            document.addEventListener('mouseup', () => { isDragging = false; });
+            document.addEventListener('mouseup', () => { 
+                isDragging = false; 
+                win.classList.remove('dragging'); // Restores transitions
+            });
             
-            // Double click title bar to maximise
             titleBar.addEventListener('dblclick', (e) => {
                 if (!e.target.classList.contains('win-btn')) {
                     maximiseWindow(win.id);
