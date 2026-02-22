@@ -202,7 +202,7 @@ function initStatusIcons() {
     const muteItem = document.createElement('div');
     muteItem.className = 'dropdown-item';
     muteItem.innerHTML = `
-        <span>Mute Sounds</span>
+        <span>System Sounds</span>
         <div class="toggle-switch" id="mute-toggle"></div>
     `;
     
