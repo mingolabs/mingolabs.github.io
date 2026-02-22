@@ -122,11 +122,19 @@
         .dock-icon.active::after { content: ''; position: absolute; bottom: -8px; width: 5px; height: 5px; background-color: var(--accent-colour); border-radius: 50%; box-shadow: 0 0 8px var(--accent-colour); }
 
         /* Window Base Styles */
-        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.1); transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s; }
+        .window { 
+            position: absolute; width: 620px; background-color: var(--window-bg); 
+            border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); 
+            display: none; flex-direction: column; overflow: hidden; 
+            border: 2px solid rgba(255, 255, 255, 0.1); 
+            transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s; 
+            transform-origin: center bottom;
+        }
         .window.active { display: flex; }
         .window.active-focus { border-color: var(--accent-colour); }
         
-        /* Maximised State */
+        /* Minimised & Maximised States */
+        .window.minimised { transform: scale(0.4) translateY(300px); opacity: 0; pointer-events: none; }
         .window.maximised { top: 30px !important; left: 0 !important; width: 100vw !important; height: calc(100vh - 30px) !important; border-radius: 0; border: none; }
         
         /* Window Controls */
@@ -201,9 +209,9 @@
             <div class="title-bar">
                 <span class="window-title">MingoMail</span>
                 <div class="window-controls">
-                    <button onclick="toggleWindow('mail-win', document.getElementById('dock-mail'))" class="win-btn min-btn"></button>
+                    <button onclick="minimiseWindow('mail-win')" class="win-btn min-btn"></button>
                     <button onclick="maximiseWindow('mail-win')" class="win-btn max-btn"></button>
-                    <button onclick="toggleWindow('mail-win', document.getElementById('dock-mail'))" class="win-btn close-btn"></button>
+                    <button onclick="closeWindow('mail-win', 'dock-mail')" class="win-btn close-btn"></button>
                 </div>
             </div>
             <div class="window-content mail-content">
@@ -237,9 +245,9 @@
             <div class="title-bar">
                 <span class="window-title">Robotics</span>
                 <div class="window-controls">
-                    <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="win-btn min-btn"></button>
+                    <button onclick="minimiseWindow('robotics-win')" class="win-btn min-btn"></button>
                     <button onclick="maximiseWindow('robotics-win')" class="win-btn max-btn"></button>
-                    <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="win-btn close-btn"></button>
+                    <button onclick="closeWindow('robotics-win', 'dock-robotics')" class="win-btn close-btn"></button>
                 </div>
             </div>
             <div class="window-content"><div class="project-grid" id="grid-robotics"></div></div>
@@ -249,9 +257,9 @@
             <div class="title-bar">
                 <span class="window-title">Software</span>
                 <div class="window-controls">
-                    <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="win-btn min-btn"></button>
+                    <button onclick="minimiseWindow('software-win')" class="win-btn min-btn"></button>
                     <button onclick="maximiseWindow('software-win')" class="win-btn max-btn"></button>
-                    <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="win-btn close-btn"></button>
+                    <button onclick="closeWindow('software-win', 'dock-software')" class="win-btn close-btn"></button>
                 </div>
             </div>
             <div class="window-content"><div class="project-grid" id="grid-software"></div></div>
@@ -261,9 +269,9 @@
             <div class="title-bar">
                 <span class="window-title">System_Info.log</span>
                 <div class="window-controls">
-                    <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="win-btn min-btn"></button>
+                    <button onclick="minimiseWindow('readme-win')" class="win-btn min-btn"></button>
                     <button onclick="maximiseWindow('readme-win')" class="win-btn max-btn"></button>
-                    <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="win-btn close-btn"></button>
+                    <button onclick="closeWindow('readme-win', 'dock-readme')" class="win-btn close-btn"></button>
                 </div>
             </div>
             <div class="window-content" style="background: #181818; font-family: monospace;"><p style="color: #00ff00;">> System Online.</p></div>
@@ -349,14 +357,39 @@
         // Window Control Logic
         function toggleWindow(winId, dockElement) {
             const win = document.getElementById(winId);
-            if (win.classList.contains('active')) {
-                win.classList.remove('active');
-                if (dockElement) dockElement.classList.remove('active');
-            } else {
+            if (!win.classList.contains('active')) {
+                // Open newly if closed
                 win.classList.add('active');
+                win.classList.remove('minimised');
                 if (dockElement) dockElement.classList.add('active');
                 focusWindow(win);
+            } else if (win.classList.contains('minimised')) {
+                // Restore from dock
+                win.classList.remove('minimised');
+                focusWindow(win);
+            } else {
+                // It is currently open on desktop
+                if (win.classList.contains('active-focus')) {
+                    minimiseWindow(winId); // Minimise if already the top window
+                } else {
+                    focusWindow(win); // Bring to front if behind other apps
+                }
             }
+        }
+
+        function minimiseWindow(winId) {
+            const win = document.getElementById(winId);
+            win.classList.add('minimised');
+            win.classList.remove('active-focus');
+            if (typeof playRandomPop === 'function') playRandomPop();
+        }
+
+        function closeWindow(winId, dockElementId) {
+            const win = document.getElementById(winId);
+            const dock = document.getElementById(dockElementId);
+            win.classList.remove('active');
+            win.classList.remove('minimised'); // Clean up state
+            if (dock) dock.classList.remove('active');
         }
 
         function maximiseWindow(winId) {
