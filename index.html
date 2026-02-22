@@ -258,6 +258,57 @@
         stroke-linejoin: round;
     }
 
+    /* Cartoony Speech Bubble */
+    #mimi-bubble {
+        position: absolute;
+        bottom: 105%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fdfdfd;
+        color: #111;
+        padding: 1rem 1.2rem;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: center;
+        width: 180px;
+        border: 3px solid #111;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10000;
+    }
+
+    /* The outer black triangle for the tail */
+    #mimi-bubble::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -12px;
+        border-width: 12px;
+        border-style: solid;
+        border-color: #111 transparent transparent transparent;
+    }
+
+    /* The inner white triangle to hollow out the tail */
+    #mimi-bubble::before {
+        content: '';
+        position: absolute;
+        top: calc(100% - 4px);
+        left: 50%;
+        margin-left: -8px;
+        border-width: 8px;
+        border-style: solid;
+        border-color: #fdfdfd transparent transparent transparent;
+        z-index: 1;
+    }
+
+    #mimi-bubble.active {
+        opacity: 1;
+    }
+
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-12px); }
@@ -270,6 +321,7 @@
 </style>
 
 <div id="mimi-container" onclick="if(typeof playRandomPop === 'function' && !window.isDraggingMimi) playRandomPop()">
+    <div id="mimi-bubble">System initialised! Take a look around. I'll be right here if you need anything.</div>
     <img src="mimi2.png" id="mimi-body" alt="Mimi Body">
     <div id="mimi-eyes-wrapper">
         <div id="mimi-eyes">
@@ -282,6 +334,55 @@
 <script>
     const mimiContainer = document.getElementById('mimi-container');
     const mimiEyes = document.getElementById('mimi-eyes');
+    const mimiBubble = document.getElementById('mimi-bubble');
+
+    // Speech Bubble Logic
+    let bubbleHoverTimer;
+    let bubbleHideTimer;
+    let hasBooted = false;
+
+    function triggerBubble(duration) {
+        mimiBubble.classList.add('active');
+        clearTimeout(bubbleHideTimer);
+        if (duration) {
+            bubbleHideTimer = setTimeout(() => {
+                mimiBubble.classList.remove('active');
+            }, duration);
+        }
+    }
+
+    // Watch for MingOS boot sequence to finish
+    const desktopEnvironment = document.getElementById('desktop-ui');
+    if (desktopEnvironment) {
+        const bootObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class' && desktopEnvironment.classList.contains('active') && !hasBooted) {
+                    hasBooted = true;
+                    // Wait 3 seconds for the desktop fade-in animation to complete before popping the bubble
+                    setTimeout(() => triggerBubble(8000), 3000); 
+                }
+            });
+        });
+        bootObserver.observe(desktopEnvironment, { attributes: true });
+    }
+
+    // Hover Interaction
+    mimiContainer.addEventListener('mouseenter', () => {
+        clearTimeout(bubbleHideTimer);
+        bubbleHoverTimer = setTimeout(() => {
+            mimiBubble.textContent = "Are we building something new today?";
+            triggerBubble();
+        }, 1000); // 1-second delay before reappearing
+    });
+
+    mimiContainer.addEventListener('mouseleave', () => {
+        clearTimeout(bubbleHoverTimer);
+        if (mimiBubble.classList.contains('active')) {
+            bubbleHideTimer = setTimeout(() => {
+                mimiBubble.classList.remove('active');
+            }, 5000); // Disappears 5 seconds after the mouse leaves
+        }
+    });
 
     // Eye Tracking Logic
     document.addEventListener('mousemove', (e) => {
@@ -338,8 +439,6 @@
         }
     });
 </script>
-
-
 
         <div class="top-bar">
             <div>Activities</div>
