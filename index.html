@@ -129,14 +129,21 @@
             border: 2px solid rgba(255, 255, 255, 0.1); 
             transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s; 
             transform-origin: center bottom;
+            min-width: 340px; min-height: 250px;
         }
         .window.active { display: flex; }
         .window.active-focus { border-color: var(--accent-colour); }
         
-        /* Dragging State: Kills transitions so dragging is 1:1 with the mouse */
-        .window.dragging {
+        /* Dragging & Resizing States: Kills transitions so movement is 1:1 with the mouse */
+        .window.dragging, .window.resizing {
             transition: none !important;
         }
+        
+        /* Invisible Resizer Handles */
+        .resizer { position: absolute; z-index: 100; }
+        .resizer-r { right: 0; top: 0; width: 8px; height: 100%; cursor: e-resize; }
+        .resizer-b { bottom: 0; left: 0; width: 100%; height: 8px; cursor: s-resize; }
+        .resizer-br { right: 0; bottom: 0; width: 16px; height: 16px; cursor: se-resize; z-index: 101; }
         
         /* Minimised & Maximised States */
         .window.minimised { transform: scale(0.4) translateY(300px); opacity: 0; pointer-events: none; }
@@ -149,7 +156,7 @@
         .min-btn { background: #ffbd2e; border-radius: 0; clip-path: inset(40% 10% 40% 10% round 2px); }
         .max-btn { background: #34c759; border-radius: 3px; }
         .close-btn { background: #ff5f57; }
-                
+        
         /* Markdown Content Styling */
         .window-content { padding: 1.8rem; min-height: 320px; overflow-y: auto; background: #2b2a29; user-select: text; flex-grow: 1; }
         .window-content h1, .window-content h2, .window-content h3 { color: var(--accent-colour); margin-top: 0; }
@@ -358,6 +365,68 @@
         });
 
         let zIndexCounter = 100;
+
+        // Global Resize Logic (Exposed so external scripts like weather.js can use it)
+        window.makeResizable = function(win) {
+            if (win.querySelector('.resizer-br')) return; // Prevent duplicates
+
+            const resizerR = document.createElement('div');
+            resizerR.className = 'resizer resizer-r';
+            const resizerB = document.createElement('div');
+            resizerB.className = 'resizer resizer-b';
+            const resizerBR = document.createElement('div');
+            resizerBR.className = 'resizer resizer-br';
+
+            win.appendChild(resizerR);
+            win.appendChild(resizerB);
+            win.appendChild(resizerBR);
+
+            let isResizing = false;
+            let currentResizer = null;
+            let startX, startY, startWidth, startHeight;
+
+            const onMouseDown = (e) => {
+                isResizing = true;
+                currentResizer = e.target;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                const rect = win.getBoundingClientRect();
+                startWidth = rect.width;
+                startHeight = rect.height;
+                
+                win.classList.add('resizing');
+                focusWindow(win);
+                e.preventDefault(); 
+                e.stopPropagation(); 
+            };
+
+            const onMouseMove = (e) => {
+                if (!isResizing) return;
+                if (win.classList.contains('maximised')) return; // Prevent resizing when full screen
+
+                if (currentResizer.classList.contains('resizer-r') || currentResizer.classList.contains('resizer-br')) {
+                    win.style.width = (startWidth + e.clientX - startX) + 'px';
+                }
+                if (currentResizer.classList.contains('resizer-b') || currentResizer.classList.contains('resizer-br')) {
+                    win.style.height = (startHeight + e.clientY - startY) + 'px';
+                }
+            };
+
+            const onMouseUp = () => {
+                if (isResizing) {
+                    isResizing = false;
+                    win.classList.remove('resizing');
+                    currentResizer = null;
+                }
+            };
+
+            resizerR.addEventListener('mousedown', onMouseDown);
+            resizerB.addEventListener('mousedown', onMouseDown);
+            resizerBR.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
         
         // Window Control Logic
         function toggleWindow(winId, dockElement) {
@@ -408,6 +477,9 @@
         }
 
         document.querySelectorAll('.window').forEach(win => {
+            // Apply resizer logic to existing windows
+            window.makeResizable(win);
+
             win.addEventListener('mousedown', () => focusWindow(win));
             const titleBar = win.querySelector('.title-bar');
             let isDragging = false, offsetX, offsetY;
