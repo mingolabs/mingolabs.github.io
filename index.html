@@ -526,5 +526,41 @@
     <script src="weather.js"></script>
     <script src="status.js"></script>
     <script src="projects.js"></script>
+
+    <style>
+    #desktop-pet {
+        position: absolute;
+        bottom: 80px; /* Sits just above your dock */
+        right: 40px;
+        width: 150px;
+        z-index: 9999;
+        cursor: pointer;
+        /* The floating animation */
+        animation: float 4s ease-in-out infinite;
+    }
+
+    #desktop-pet img {
+        width: 100%;
+        height: auto;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+        /* The breathing animation (squash and stretch) */
+        animation: breathe 4s ease-in-out infinite;
+        transform-origin: bottom center;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+
+    @keyframes breathe {
+        0%, 100% { transform: scale3d(1, 1, 1); }
+        50% { transform: scale3d(1.02, 0.98, 1); } /* Gets slightly wider and shorter */
+    }
+</style>
+
+<div id="desktop-pet" onclick="if(typeof playRandomPop === 'function') playRandomPop()">
+    <img src="mimi.png" alt="Mimi the Desktop Pet">
+</div>
 </body>
 </html>
