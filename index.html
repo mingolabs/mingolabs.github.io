@@ -205,6 +205,142 @@
     </div>
 
     <div id="desktop-ui">
+        <style>
+    #mimi-container {
+        position: absolute;
+        bottom: 90px;
+        right: 40px;
+        width: 200px;
+        z-index: 9999;
+        cursor: grab;
+        animation: float 4s ease-in-out infinite;
+        filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));
+    }
+
+    #mimi-container.dragging {
+        animation: none !important; /* Stops the float animation fighting the mouse */
+        cursor: grabbing;
+    }
+
+    #mimi-body {
+        width: 100%;
+        height: auto;
+        display: block;
+        animation: breathe 4s ease-in-out infinite;
+        transform-origin: bottom center;
+        pointer-events: none; /* Stops the browser's default image-dragging ghost */
+    }
+
+    #mimi-eyes-wrapper {
+        position: absolute;
+        top: 48%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        pointer-events: none;
+    }
+
+    #mimi-eyes {
+        display: flex;
+        justify-content: space-between;
+        width: 32px;
+        margin: 0 auto;
+        transition: transform 0.1s ease-out;
+        filter: drop-shadow(0 0 6px rgba(126, 196, 46, 0.9));
+    }
+
+    .mimi-eye {
+        width: 13px; 
+        height: 11px;
+        fill: #7cc127;
+        stroke: #7cc127;
+        stroke-width: 6px;
+        stroke-linejoin: round;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-12px); }
+    }
+
+    @keyframes breathe {
+        0%, 100% { transform: scale3d(1, 1, 1); }
+        50% { transform: scale3d(1.02, 0.98, 1); }
+    }
+</style>
+
+<div id="mimi-container" onclick="if(typeof playRandomPop === 'function' && !window.isDraggingMimi) playRandomPop()">
+    <img src="mimi.png" id="mimi-body" alt="Mimi Body">
+    <div id="mimi-eyes-wrapper">
+        <div id="mimi-eyes">
+            <svg class="mimi-eye" viewBox="0 0 24 24"><path d="M12 3L2 21h20L12 3z"/></svg>
+            <svg class="mimi-eye" viewBox="0 0 24 24"><path d="M12 3L2 21h20L12 3z"/></svg>
+        </div>
+    </div>
+</div>
+
+<script>
+    const mimiContainer = document.getElementById('mimi-container');
+    const mimiEyes = document.getElementById('mimi-eyes');
+
+    // Eye Tracking Logic
+    document.addEventListener('mousemove', (e) => {
+        if (!mimiEyes || !mimiContainer) return;
+        
+        const rect = mimiContainer.getBoundingClientRect();
+        const mimiCentreX = rect.left + rect.width / 2;
+        const mimiCentreY = rect.top + rect.height / 2;
+        
+        const deltaX = e.clientX - mimiCentreX;
+        const deltaY = e.clientY - mimiCentreY;
+        
+        const angle = Math.atan2(deltaY, deltaX);
+        const maxEyeMove = 8; 
+        const distance = Math.min(Math.hypot(deltaX, deltaY) / 45, maxEyeMove); 
+        
+        const moveX = Math.cos(angle) * distance;
+        const moveY = Math.sin(angle) * distance;
+        
+        mimiEyes.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    });
+
+    // Dragging Logic
+    window.isDraggingMimi = false;
+    let mimiOffsetX, mimiOffsetY;
+
+    mimiContainer.addEventListener('mousedown', (e) => {
+        window.isDraggingMimi = true;
+        mimiContainer.classList.add('dragging');
+        
+        // Convert from bottom/right to left/top to lock 1:1 with the mouse
+        const rect = mimiContainer.getBoundingClientRect();
+        mimiContainer.style.left = rect.left + 'px';
+        mimiContainer.style.top = rect.top + 'px';
+        mimiContainer.style.bottom = 'auto';
+        mimiContainer.style.right = 'auto';
+        
+        mimiOffsetX = e.clientX - rect.left;
+        mimiOffsetY = e.clientY - rect.top;
+        e.preventDefault(); 
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!window.isDraggingMimi) return;
+        mimiContainer.style.left = (e.clientX - mimiOffsetX) + 'px';
+        mimiContainer.style.top = (e.clientY - mimiOffsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (window.isDraggingMimi) {
+            // A tiny delay ensures dropping her doesn't accidentally trigger the click sound
+            setTimeout(() => window.isDraggingMimi = false, 50);
+            mimiContainer.classList.remove('dragging');
+        }
+    });
+</script>
+
+
+
         <div class="top-bar">
             <div>Activities</div>
             <div class="top-bar-centre" id="clock">00:00</div>
@@ -527,102 +663,7 @@
     <script src="status.js"></script>
     <script src="projects.js"></script>
 
-    <style>
-    #mimi-container {
-        position: absolute;
-        bottom: 90px;
-        right: 40px;
-        width: 200px;
-        z-index: 9999;
-        cursor: pointer;
-        animation: float 4s ease-in-out infinite;
-        filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));
-    }
-
-    #mimi-body {
-        width: 100%;
-        height: auto;
-        display: block;
-        animation: breathe 4s ease-in-out infinite;
-        transform-origin: bottom center;
-    }
-
-    #mimi-eyes-wrapper {
-        position: absolute;
-        top: 48%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 60px;
-        pointer-events: none;
-    }
-
-    #mimi-eyes {
-        display: flex;
-        justify-content: space-between;
-        width: 32px;
-        margin: 0 auto;
-        transition: transform 0.1s ease-out;
-        filter: drop-shadow(0 0 6px rgba(126, 196, 46, 0.9));
-    }
-
-    /* Upgraded to SVG styling for soft corners */
-    .mimi-eye {
-        width: 13px; 
-        height: 11px;
-        fill: #7cc127;
-        stroke: #7cc127;
-        stroke-width: 6px; /* Increasing this makes the corners even rounder */
-        stroke-linejoin: round; /* The magic property that smooths the points */
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-12px); }
-    }
-
-    @keyframes breathe {
-        0%, 100% { transform: scale3d(1, 1, 1); }
-        50% { transform: scale3d(1.02, 0.98, 1); }
-    }
-</style>
-
-<div id="mimi-container" onclick="if(typeof playRandomPop === 'function') playRandomPop()">
-    <img src="mimi.png" id="mimi-body" alt="Mimi Body">
-    <div id="mimi-eyes-wrapper">
-        <div id="mimi-eyes">
-            <svg class="mimi-eye" viewBox="0 0 24 24"><path d="M12 3L2 21h20L12 3z"/></svg>
-            <svg class="mimi-eye" viewBox="0 0 24 24"><path d="M12 3L2 21h20L12 3z"/></svg>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('mousemove', (e) => {
-        const eyes = document.getElementById('mimi-eyes');
-        const container = document.getElementById('mimi-container');
-        if (!eyes || !container) return;
-        
-        const rect = container.getBoundingClientRect();
-        const mimiCentreX = rect.left + rect.width / 2;
-        const mimiCentreY = rect.top + rect.height / 2;
-        
-        const mouseX = e.clientX;
-        const mouseY = e.clientY;
-        
-        const deltaX = mouseX - mimiCentreX;
-        const deltaY = mouseY - mimiCentreY;
-        
-        const angle = Math.atan2(deltaY, deltaX);
-        
-        const maxEyeMove = 8; 
-        const distance = Math.min(Math.hypot(deltaX, deltaY) / 45, maxEyeMove); 
-        
-        const moveX = Math.cos(angle) * distance;
-        const moveY = Math.sin(angle) * distance;
-        
-        eyes.style.transform = `translate(${moveX}px, ${moveY}px)`;
-    });
-</script>
+    
 
 </body>
 </html>
