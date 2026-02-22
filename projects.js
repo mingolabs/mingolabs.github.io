@@ -232,7 +232,7 @@ function renderCategory(category) {
                             isAnimating = false;
                         }, 400); 
                     };
-                }, 1500); // 1.5s between swaps to allow the fade to complete
+                }, 1500); 
             };
 
             card.onmouseleave = () => {
@@ -269,13 +269,14 @@ async function openProjectViewer(proj) {
     const existingWin = document.getElementById('project-viewer-win');
     if (existingWin) existingWin.remove();
 
+    // The fix: Added max-height: 80vh to the window, and flex-grow: 1 to the content area
     const winHTML = `
-        <div id="project-viewer-win" class="window active active-focus" style="top: 10%; left: 30%; width: 680px; z-index: 999;">
+        <div id="project-viewer-win" class="window active active-focus" style="top: 10%; left: 30%; width: 680px; max-height: 80vh; z-index: 999;">
             <div class="title-bar" id="viewer-title-bar">
                 <span class="window-title">${proj.title}</span>
                 <button onclick="document.getElementById('project-viewer-win').remove()" class="close-btn"></button>
             </div>
-            <div class="window-content" id="viewer-content">
+            <div class="window-content" id="viewer-content" style="flex-grow: 1; height: 100%;">
                 <p class="loading-text">Fetching file from system directory...</p>
             </div>
         </div>
