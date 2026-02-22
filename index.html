@@ -261,7 +261,7 @@
     /* Cartoony Speech Bubble */
     #mimi-bubble {
         position: absolute;
-        bottom: 105%;
+        bottom: 85%;
         left: 50%;
         transform: translateX(-50%);
         background: #fdfdfd;
@@ -298,8 +298,8 @@
         position: absolute;
         top: calc(100% - 4px);
         left: 50%;
-        margin-left: -8px;
-        border-width: 8px;
+        margin-left: -10px;
+        border-width: 10px;
         border-style: solid;
         border-color: #fdfdfd transparent transparent transparent;
         z-index: 1;
@@ -359,7 +359,7 @@
                 if (mutation.attributeName === 'class' && desktopEnvironment.classList.contains('active') && !hasBooted) {
                     hasBooted = true;
                     // Wait 3 seconds for the desktop fade-in animation to complete before popping the bubble
-                    setTimeout(() => triggerBubble(8000), 3000); 
+                    setTimeout(() => triggerBubble(5000), 3000); 
                 }
             });
         });
@@ -380,7 +380,7 @@
         if (mimiBubble.classList.contains('active')) {
             bubbleHideTimer = setTimeout(() => {
                 mimiBubble.classList.remove('active');
-            }, 5000); // Disappears 5 seconds after the mouse leaves
+            }, 3000); // Disappears 5 seconds after the mouse leaves
         }
     });
 
