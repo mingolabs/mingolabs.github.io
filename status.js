@@ -63,6 +63,16 @@ function initStatusIcons() {
             box-shadow: 0 15px 40px rgba(0,0,0,0.6);
             z-index: 10000;
         }
+        /* The Invisible Bridge to prevent hover gap */
+        .settings-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: transparent;
+        }
         .settings-wrapper:hover .settings-dropdown {
             opacity: 1;
             pointer-events: auto;
