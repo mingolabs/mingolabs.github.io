@@ -530,12 +530,11 @@
     <style>
     #mimi-container {
         position: absolute;
-        bottom: 90px; /* Sits just above the dock */
+        bottom: 90px;
         right: 40px;
-        width: 180px;
+        width: 200px;
         z-index: 9999;
         cursor: pointer;
-        /* Floating animation */
         animation: float 4s ease-in-out infinite;
         filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));
     }
@@ -544,37 +543,36 @@
         width: 100%;
         height: auto;
         display: block;
-        /* Subtle breathing animation */
         animation: breathe 4s ease-in-out infinite;
         transform-origin: bottom center;
     }
 
     #mimi-eyes-wrapper {
         position: absolute;
-        top: 54%; /* Adjust this percentage to move the eyes up or down the face */
+        top: 48%;
         left: 50%;
         transform: translate(-50%, -50%);
         width: 60px;
-        pointer-events: none; /* Stops the eyes blocking clicks */
+        pointer-events: none;
     }
 
-    /* CSS Generated Eyes */
     #mimi-eyes {
         display: flex;
         justify-content: space-between;
-        width: 36px; /* Adjusts how far apart the eyes are */
+        width: 36px;
         margin: 0 auto;
         transition: transform 0.1s ease-out;
-        /* The neon green glow */
-        filter: drop-shadow(0 0 6px rgba(187, 251, 114, 0.6));
+        filter: drop-shadow(0 0 6px rgba(187, 251, 114, 0.9));
     }
 
+    /* Upgraded to SVG styling for soft corners */
     .mimi-eye {
-        width: 16px;
-        height: 14px;
-        background-color: #c4ff7d;
-        /* Mathematically cuts the box into a perfect triangle */
-        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        width: 12px; 
+        height: 10px;
+        fill: #c4ff7d;
+        stroke: #c4ff7d;
+        stroke-width: 4px; /* Increasing this makes the corners even rounder */
+        stroke-linejoin: round; /* The magic property that smooths the points */
     }
 
     @keyframes float {
@@ -592,8 +590,8 @@
     <img src="mimi.png" id="mimi-body" alt="Mimi Body">
     <div id="mimi-eyes-wrapper">
         <div id="mimi-eyes">
-            <div class="mimi-eye"></div>
-            <div class="mimi-eye"></div>
+            <svg class="mimi-eye" viewBox="0 0 24 24"><path d="M12 3L2 21h20L12 3z"/></svg>
+            <svg class="mimi-eye" viewBox="0 0 24 24"><path d="M12 3L2 21h20L12 3z"/></svg>
         </div>
     </div>
 </div>
@@ -604,33 +602,27 @@
         const container = document.getElementById('mimi-container');
         if (!eyes || !container) return;
         
-        // Find the absolute centre of Mimi's container on the screen
         const rect = container.getBoundingClientRect();
         const mimiCentreX = rect.left + rect.width / 2;
         const mimiCentreY = rect.top + rect.height / 2;
         
-        // Find where the mouse is
         const mouseX = e.clientX;
         const mouseY = e.clientY;
         
-        // Calculate the difference in distance
         const deltaX = mouseX - mimiCentreX;
         const deltaY = mouseY - mimiCentreY;
         
-        // Calculate the angle using trigonometry
         const angle = Math.atan2(deltaY, deltaX);
         
-        // Cap the distance so the eyes stay inside the black screen
         const maxEyeMove = 8; 
         const distance = Math.min(Math.hypot(deltaX, deltaY) / 45, maxEyeMove); 
         
-        // Calculate the final X and Y movements
         const moveX = Math.cos(angle) * distance;
         const moveY = Math.sin(angle) * distance;
         
-        // Apply the movement to the eyes
         eyes.style.transform = `translate(${moveX}px, ${moveY}px)`;
     });
 </script>
+
 </body>
 </html>
