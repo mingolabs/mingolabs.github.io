@@ -23,6 +23,24 @@
             color: var(--text-colour); user-select: none;
         }
 
+        /* Custom OS Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-colour);
+        }
+
         #bg-fluid {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 1; filter: blur(120px); transform: scale(1.2); opacity: 0.85;
@@ -103,14 +121,24 @@
         .dock-icon:hover { background-color: rgba(255, 255, 255, 0.15); transform: translateY(-10px) scale(1.15); }
         .dock-icon.active::after { content: ''; position: absolute; bottom: -8px; width: 5px; height: 5px; background-color: var(--accent-colour); border-radius: 50%; box-shadow: 0 0 8px var(--accent-colour); }
 
-        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.1); }
+        /* Window Base Styles */
+        .window { position: absolute; width: 620px; background-color: var(--window-bg); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; flex-direction: column; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.1); transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s; }
         .window.active { display: flex; }
         .window.active-focus { border-color: var(--accent-colour); }
+        
+        /* Maximised State */
+        .window.maximised { top: 30px !important; left: 0 !important; width: 100vw !important; height: calc(100vh - 30px) !important; border-radius: 0; border: none; }
+        
+        /* Window Controls */
         .title-bar { background-color: var(--title-bar); padding: 0.7rem 1.2rem; display: flex; justify-content: space-between; align-items: center; cursor: move; }
-        .close-btn { background: #ff5f57; border: none; width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+        .window-controls { display: flex; gap: 8px; align-items: center; }
+        .win-btn { width: 13px; height: 13px; border-radius: 50%; border: none; cursor: pointer; }
+        .min-btn { background: #ffbd2e; }
+        .max-btn { background: #28c940; }
+        .close-btn { background: #ff5f57; }
         
         /* Markdown Content Styling */
-        .window-content { padding: 1.8rem; min-height: 320px; overflow-y: auto; background: #2b2a29; user-select: text; }
+        .window-content { padding: 1.8rem; min-height: 320px; overflow-y: auto; background: #2b2a29; user-select: text; flex-grow: 1; }
         .window-content h1, .window-content h2, .window-content h3 { color: var(--accent-colour); margin-top: 0; }
         .window-content a { color: #00d2ff; text-decoration: none; }
         .window-content a:hover { text-decoration: underline; }
@@ -160,8 +188,7 @@
         <div class="top-bar">
             <div>Activities</div>
             <div class="top-bar-centre" id="clock">00:00</div>
-            <div>⚙️ 🔋 📶</div>
-        </div>
+            <div></div> </div>
 
         <div class="dock">
             <div class="dock-icon" id="dock-mail" onclick="toggleWindow('mail-win', this)" onmouseenter="playRandomPop()" title="MingoMail"><img src="mingomail.png" width="42px"/></div>
@@ -171,7 +198,14 @@
         </div>
 
         <div id="mail-win" class="window" style="top: 8%; left: 10%; width: 700px;">
-            <div class="title-bar"><span class="window-title">MingoMail</span><button onclick="toggleWindow('mail-win', document.getElementById('dock-mail'))" class="close-btn"></button></div>
+            <div class="title-bar">
+                <span class="window-title">MingoMail</span>
+                <div class="window-controls">
+                    <button onclick="toggleWindow('mail-win', document.getElementById('dock-mail'))" class="win-btn min-btn"></button>
+                    <button onclick="maximiseWindow('mail-win')" class="win-btn max-btn"></button>
+                    <button onclick="toggleWindow('mail-win', document.getElementById('dock-mail'))" class="win-btn close-btn"></button>
+                </div>
+            </div>
             <div class="window-content mail-content">
                 <form id="mingomail-form">
                     <input type="hidden" name="access_key" value="13002a88-84a0-4ab8-b699-308b70a2c3b7">
@@ -200,17 +234,38 @@
         </div>
 
         <div id="robotics-win" class="window" style="top: 15%; left: 15%;">
-            <div class="title-bar"><span class="window-title">Robotics</span><button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="close-btn"></button></div>
-            <div class="window-content"><div class="project-card"><h4>Autonomous Rover Mk II</h4><p>RPLIDAR integration.</p></div></div>
+            <div class="title-bar">
+                <span class="window-title">Robotics</span>
+                <div class="window-controls">
+                    <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="win-btn min-btn"></button>
+                    <button onclick="maximiseWindow('robotics-win')" class="win-btn max-btn"></button>
+                    <button onclick="toggleWindow('robotics-win', document.getElementById('dock-robotics'))" class="win-btn close-btn"></button>
+                </div>
+            </div>
+            <div class="window-content"><div class="project-grid" id="grid-robotics"></div></div>
         </div>
 
         <div id="software-win" class="window" style="top: 20%; left: 20%;">
-            <div class="title-bar"><span class="window-title">Software</span><button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="close-btn"></button></div>
-            <div class="window-content"><div class="project-card"><h4>Telemetry Dashboard</h4><p>WebSockets and Python.</p></div></div>
+            <div class="title-bar">
+                <span class="window-title">Software</span>
+                <div class="window-controls">
+                    <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="win-btn min-btn"></button>
+                    <button onclick="maximiseWindow('software-win')" class="win-btn max-btn"></button>
+                    <button onclick="toggleWindow('software-win', document.getElementById('dock-software'))" class="win-btn close-btn"></button>
+                </div>
+            </div>
+            <div class="window-content"><div class="project-grid" id="grid-software"></div></div>
         </div>
 
         <div id="readme-win" class="window" style="top: 10%; left: 50%;">
-            <div class="title-bar"><span class="window-title">System_Info.log</span><button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="close-btn"></button></div>
+            <div class="title-bar">
+                <span class="window-title">System_Info.log</span>
+                <div class="window-controls">
+                    <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="win-btn min-btn"></button>
+                    <button onclick="maximiseWindow('readme-win')" class="win-btn max-btn"></button>
+                    <button onclick="toggleWindow('readme-win', document.getElementById('dock-readme'))" class="win-btn close-btn"></button>
+                </div>
+            </div>
             <div class="window-content" style="background: #181818; font-family: monospace;"><p style="color: #00ff00;">> System Online.</p></div>
         </div>
     </div>
@@ -256,7 +311,6 @@
             btn.disabled = true;
 
             const formData = new FormData(this);
-            // Grab the rich HTML from the editor box
             formData.append('message', document.getElementById('mail-body').innerHTML);
 
             try {
@@ -291,16 +345,24 @@
         });
 
         let zIndexCounter = 100;
+        
+        // Window Control Logic
         function toggleWindow(winId, dockElement) {
             const win = document.getElementById(winId);
             if (win.classList.contains('active')) {
                 win.classList.remove('active');
-                dockElement.classList.remove('active');
+                if (dockElement) dockElement.classList.remove('active');
             } else {
                 win.classList.add('active');
-                dockElement.classList.add('active');
+                if (dockElement) dockElement.classList.add('active');
                 focusWindow(win);
             }
+        }
+
+        function maximiseWindow(winId) {
+            const win = document.getElementById(winId);
+            win.classList.toggle('maximised');
+            focusWindow(win);
         }
 
         function focusWindow(win) {
@@ -314,18 +376,32 @@
             win.addEventListener('mousedown', () => focusWindow(win));
             const titleBar = win.querySelector('.title-bar');
             let isDragging = false, offsetX, offsetY;
+            
             titleBar.addEventListener('mousedown', (e) => {
+                // Prevent dragging if clicking a control button
+                if (e.target.classList.contains('win-btn')) return;
+                
                 isDragging = true;
                 offsetX = e.clientX - win.getBoundingClientRect().left;
                 offsetY = e.clientY - win.getBoundingClientRect().top;
                 focusWindow(win);
             });
+            
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
+                if (win.classList.contains('maximised')) return; // Disable drag when maximised
                 win.style.left = (e.clientX - offsetX) + 'px';
                 win.style.top = (e.clientY - offsetY) + 'px';
             });
+            
             document.addEventListener('mouseup', () => { isDragging = false; });
+            
+            // Double click title bar to maximise
+            titleBar.addEventListener('dblclick', (e) => {
+                if (!e.target.classList.contains('win-btn')) {
+                    maximiseWindow(win.id);
+                }
+            });
         });
 
         function updateClock() {
