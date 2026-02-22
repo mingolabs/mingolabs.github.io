@@ -528,39 +528,109 @@
     <script src="projects.js"></script>
 
     <style>
-    #desktop-pet {
+    #mimi-container {
         position: absolute;
-        bottom: 80px; /* Sits just above your dock */
+        bottom: 90px; /* Sits just above the dock */
         right: 40px;
-        width: 150px;
+        width: 140px;
         z-index: 9999;
         cursor: pointer;
-        /* The floating animation */
+        /* Floating animation */
         animation: float 4s ease-in-out infinite;
+        filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));
     }
 
-    #desktop-pet img {
+    #mimi-body {
         width: 100%;
         height: auto;
-        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
-        /* The breathing animation (squash and stretch) */
+        display: block;
+        /* Subtle breathing animation */
         animation: breathe 4s ease-in-out infinite;
         transform-origin: bottom center;
     }
 
+    #mimi-eyes-wrapper {
+        position: absolute;
+        top: 44%; /* Adjust this percentage to move the eyes up or down the face */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        pointer-events: none; /* Stops the eyes blocking clicks */
+    }
+
+    /* CSS Generated Eyes */
+    #mimi-eyes {
+        display: flex;
+        justify-content: space-between;
+        width: 46px; /* Adjusts how far apart the eyes are */
+        margin: 0 auto;
+        transition: transform 0.1s ease-out;
+        /* The neon green glow */
+        filter: drop-shadow(0 0 6px rgba(187, 251, 114, 0.9));
+    }
+
+    .mimi-eye {
+        width: 16px;
+        height: 14px;
+        background-color: #c4ff7d;
+        /* Mathematically cuts the box into a perfect triangle */
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-15px); }
+        50% { transform: translateY(-12px); }
     }
 
     @keyframes breathe {
         0%, 100% { transform: scale3d(1, 1, 1); }
-        50% { transform: scale3d(1.02, 0.98, 1); } /* Gets slightly wider and shorter */
+        50% { transform: scale3d(1.02, 0.98, 1); }
     }
 </style>
 
-<div id="desktop-pet" onclick="if(typeof playRandomPop === 'function') playRandomPop()">
-    <img src="mimi.png" alt="Mimi the Desktop Pet">
+<div id="mimi-container" onclick="if(typeof playRandomPop === 'function') playRandomPop()">
+    <img src="mimi.png" id="mimi-body" alt="Mimi Body">
+    <div id="mimi-eyes-wrapper">
+        <div id="mimi-eyes">
+            <div class="mimi-eye"></div>
+            <div class="mimi-eye"></div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('mousemove', (e) => {
+        const eyes = document.getElementById('mimi-eyes');
+        const container = document.getElementById('mimi-container');
+        if (!eyes || !container) return;
+        
+        // Find the absolute centre of Mimi's container on the screen
+        const rect = container.getBoundingClientRect();
+        const mimiCentreX = rect.left + rect.width / 2;
+        const mimiCentreY = rect.top + rect.height / 2;
+        
+        // Find where the mouse is
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        
+        // Calculate the difference in distance
+        const deltaX = mouseX - mimiCentreX;
+        const deltaY = mouseY - mimiCentreY;
+        
+        // Calculate the angle using trigonometry
+        const angle = Math.atan2(deltaY, deltaX);
+        
+        // Cap the distance so the eyes stay inside the black screen
+        const maxEyeMove = 8; 
+        const distance = Math.min(Math.hypot(deltaX, deltaY) / 45, maxEyeMove); 
+        
+        // Calculate the final X and Y movements
+        const moveX = Math.cos(angle) * distance;
+        const moveY = Math.sin(angle) * distance;
+        
+        // Apply the movement to the eyes
+        eyes.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    });
+</script>
 </body>
 </html>
