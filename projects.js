@@ -1,5 +1,15 @@
+window.portfolioData = {
+    robotics: [],
+    software: []
+};
+window.portfolioPages = {
+    robotics: 1,
+    software: 1
+};
+const ITEMS_PER_PAGE = 5;
+
 async function initProjects() {
-    // 1. Inject CSS for the dynamic project cards and viewer
+    // Inject CSS for dynamic cards, crossfade, and pagination
     const style = document.createElement('style');
     style.textContent = `
         .project-grid {
@@ -24,6 +34,7 @@ async function initProjects() {
             transform: translateY(-2px);
         }
         .os-project-img-container {
+            position: relative;
             width: 140px;
             height: 90px;
             border-radius: 6px;
@@ -32,10 +43,14 @@ async function initProjects() {
             background: #111;
         }
         .os-project-img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.2s;
+            object-position: center;
+            transition: opacity 0.4s ease-in-out;
         }
         .os-project-info {
             flex-grow: 1;
@@ -72,95 +87,188 @@ async function initProjects() {
             font-weight: bold;
             text-transform: uppercase;
         }
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        .page-btn {
+            background: #383838;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+        .page-btn:hover:not(:disabled) {
+            background: var(--accent-colour);
+            color: #000;
+            border-color: var(--accent-colour);
+        }
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
     `;
     document.head.appendChild(style);
 
     try {
-        // 2. Fetch the JSON database
         const res = await fetch('projects.json');
         if (!res.ok) throw new Error('Could not load projects.json');
         const projects = await res.json();
 
-        // 3. Sort: Pinned first, then by date (newest to oldest)
+        // Sort: Pinned first, then by date
         projects.sort((a, b) => {
             if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
             return new Date(b.date) - new Date(a.date);
         });
 
-        // 4. Clear the hardcoded content in the target windows
+        // Group into categories
+        projects.forEach(proj => {
+            if (proj.category === 'robotics') window.portfolioData.robotics.push(proj);
+            if (proj.category === 'software') window.portfolioData.software.push(proj);
+        });
+
+        // Setup base containers
         const roboticsWin = document.querySelector('#robotics-win .window-content');
         const softwareWin = document.querySelector('#software-win .window-content');
-        if (roboticsWin) roboticsWin.innerHTML = '<div class="project-grid" id="grid-robotics"></div>';
-        if (softwareWin) softwareWin.innerHTML = '<div class="project-grid" id="grid-software"></div>';
+        if (roboticsWin) roboticsWin.innerHTML = '<div id="container-robotics"></div>';
+        if (softwareWin) softwareWin.innerHTML = '<div id="container-software"></div>';
 
-        // 5. Generate and inject cards
-        projects.forEach(proj => {
-            const gridId = `grid-${proj.category}`;
-            const grid = document.getElementById(gridId);
-            if (!grid) return; // Skip if category window doesn't exist
-
-            // Format the date to UK standard (e.g., 15 Nov 2025)
-            const dateObj = new Date(proj.date);
-            const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-
-            const pinnedHTML = proj.pinned ? `<span class="pinned-badge">📌 Pinned</span>` : '';
-            const initialImg = proj.hoverImages && proj.hoverImages.length > 0 ? proj.hoverImages[0] : '';
-
-            const card = document.createElement('div');
-            card.className = 'os-project-card';
-            card.innerHTML = `
-                <div class="os-project-img-container">
-                    <img src="${initialImg}" alt="${proj.title}" class="os-project-img" id="img-${proj.id}">
-                </div>
-                <div class="os-project-info">
-                    <h4 class="os-project-title">${proj.title} ${pinnedHTML}</h4>
-                    <p class="os-project-meta">${formattedDate}</p>
-                    <p class="os-project-summary">${proj.summary}</p>
-                </div>
-            `;
-
-            // Hover Slideshow Logic
-            if (proj.hoverImages && proj.hoverImages.length > 1) {
-                let interval;
-                let imgIndex = 0;
-                const imgElement = card.querySelector(`#img-${proj.id}`);
-
-                card.onmouseenter = () => {
-                    if (typeof playRandomPop === 'function') playRandomPop();
-                    interval = setInterval(() => {
-                        imgIndex = (imgIndex + 1) % proj.hoverImages.length;
-                        imgElement.src = proj.hoverImages[imgIndex];
-                    }, 600); // Cycles every 0.6 seconds
-                };
-
-                card.onmouseleave = () => {
-                    clearInterval(interval);
-                    imgIndex = 0;
-                    imgElement.src = proj.hoverImages[0];
-                };
-            } else {
-                card.onmouseenter = () => { if (typeof playRandomPop === 'function') playRandomPop(); };
-            }
-
-            // Click to open project
-            card.onclick = () => openProjectViewer(proj);
-            grid.appendChild(card);
-        });
+        renderCategory('robotics');
+        renderCategory('software');
 
     } catch (error) {
         console.error("Failed to load projects:", error);
     }
 }
 
-// 6. Dynamic Project Viewer Window Logic
+function renderCategory(category) {
+    const container = document.getElementById(`container-${category}`);
+    if (!container) return;
+
+    const allProjects = window.portfolioData[category];
+    const currentPage = window.portfolioPages[category];
+    const totalPages = Math.ceil(allProjects.length / ITEMS_PER_PAGE) || 1;
+    
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const visibleProjects = allProjects.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    let html = `<div class="project-grid">`;
+
+    visibleProjects.forEach(proj => {
+        const dateObj = new Date(proj.date);
+        const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const pinnedHTML = proj.pinned ? `<span class="pinned-badge">📌 Pinned</span>` : '';
+        const initialImg = proj.hoverImages && proj.hoverImages.length > 0 ? proj.hoverImages[0] : '';
+
+        // Injecting two images for the crossfade effect
+        html += `
+            <div class="os-project-card" data-id="${proj.id}">
+                <div class="os-project-img-container">
+                    <img src="${initialImg}" alt="" class="os-project-img img-current" style="opacity: 1; z-index: 2;">
+                    <img src="" alt="" class="os-project-img img-next" style="opacity: 0; z-index: 1;">
+                </div>
+                <div class="os-project-info">
+                    <h4 class="os-project-title">${proj.title} ${pinnedHTML}</h4>
+                    <p class="os-project-meta">${formattedDate}</p>
+                    <p class="os-project-summary">${proj.summary}</p>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    // Pagination Controls
+    if (totalPages > 1) {
+        html += `
+            <div class="pagination-bar">
+                <button class="page-btn" onclick="changePage('${category}', -1)" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                <span>Page ${currentPage} of ${totalPages}</span>
+                <button class="page-btn" onclick="changePage('${category}', 1)" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+
+    // Attach Javascript Event Listeners after rendering
+    visibleProjects.forEach(proj => {
+        const card = container.querySelector(`.os-project-card[data-id="${proj.id}"]`);
+        
+        // Setup Hover Crossfade
+        if (proj.hoverImages && proj.hoverImages.length > 1) {
+            let interval;
+            let imgIndex = 0;
+            let isAnimating = false;
+            const currentImg = card.querySelector('.img-current');
+            const nextImg = card.querySelector('.img-next');
+
+            card.onmouseenter = () => {
+                if (typeof playRandomPop === 'function') playRandomPop();
+                interval = setInterval(() => {
+                    if (isAnimating) return;
+                    isAnimating = true;
+                    
+                    imgIndex = (imgIndex + 1) % proj.hoverImages.length;
+                    nextImg.src = proj.hoverImages[imgIndex];
+                    
+                    nextImg.onload = () => {
+                        nextImg.style.opacity = '1';
+                        currentImg.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            currentImg.src = nextImg.src;
+                            currentImg.style.opacity = '1';
+                            nextImg.style.opacity = '0';
+                            isAnimating = false;
+                        }, 400); 
+                    };
+                }, 1500); // 1.5s between swaps to allow the fade to complete
+            };
+
+            card.onmouseleave = () => {
+                clearInterval(interval);
+                imgIndex = 0;
+                currentImg.src = proj.hoverImages[0];
+                currentImg.style.opacity = '1';
+                nextImg.style.opacity = '0';
+                isAnimating = false;
+            };
+        } else {
+            card.onmouseenter = () => { if (typeof playRandomPop === 'function') playRandomPop(); };
+        }
+
+        // Click to open project
+        card.onclick = () => openProjectViewer(proj);
+    });
+}
+
+window.changePage = function(category, direction) {
+    if (typeof playRandomPop === 'function') playRandomPop();
+    window.portfolioPages[category] += direction;
+    renderCategory(category);
+    
+    // Scroll window back to top when paginating
+    const winContent = document.querySelector(`#${category}-win .window-content`);
+    if (winContent) winContent.scrollTop = 0;
+};
+
+// Dynamic Project Viewer Window Logic
 async function openProjectViewer(proj) {
     const desktop = document.getElementById('desktop-ui');
     
-    // Check if the viewer is already open, if so, close it to refresh
     const existingWin = document.getElementById('project-viewer-win');
     if (existingWin) existingWin.remove();
 
-    // Create the dynamic window
     const winHTML = `
         <div id="project-viewer-win" class="window active active-focus" style="top: 10%; left: 30%; width: 680px; z-index: 999;">
             <div class="title-bar" id="viewer-title-bar">
@@ -174,7 +282,6 @@ async function openProjectViewer(proj) {
     `;
     desktop.insertAdjacentHTML('beforeend', winHTML);
 
-    // Apply drag-and-drop and focus mechanics
     const win = document.getElementById('project-viewer-win');
     const titleBar = document.getElementById('viewer-title-bar');
     
@@ -205,7 +312,6 @@ async function openProjectViewer(proj) {
     });
     document.addEventListener('mouseup', () => { isDragging = false; });
 
-    // 7. Fetch the actual content file
     try {
         const fileRes = await fetch(proj.contentFile);
         if (!fileRes.ok) throw new Error('File not found');
@@ -213,11 +319,9 @@ async function openProjectViewer(proj) {
         let textData = await fileRes.text();
         const viewerContent = document.getElementById('viewer-content');
 
-        // If it's a markdown file, parse it using the marked.js library you already have
         if (proj.contentFile.endsWith('.md')) {
             viewerContent.innerHTML = marked.parse(textData);
         } else {
-            // Otherwise, inject the raw HTML
             viewerContent.innerHTML = textData;
         }
     } catch (error) {

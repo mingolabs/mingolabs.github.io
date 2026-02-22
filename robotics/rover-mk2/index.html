@@ -1,15 +1,95 @@
+<style>
+    .project-header {
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .project-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+    }
+    .project-meta {
+        display: flex;
+        gap: 1rem;
+        color: #888;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .project-meta span {
+        background: rgba(255,255,255,0.05);
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+    }
+    .video-container {
+        width: 100%;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 2rem 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    /* Modern responsive iframe CSS */
+    .video-container iframe {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border: none;
+    }
+    .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    .feature-box {
+        background: rgba(0,0,0,0.2);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 3px solid var(--accent-colour);
+    }
+    .feature-box h3 {
+        margin-top: 0;
+        color: #fdfdfd;
+    }
+</style>
+
 <div class="project-details">
-    <h1>Autonomous Rover Mk II</h1>
-    <p><strong>Date:</strong> 15 Nov 2025</p>
-    <p>This project involved integrating an RPLIDAR sensor into a custom-built rover chassis for real-time obstacle avoidance and mapping.</p>
+    <div class="project-header">
+        <h1>Autonomous Rover Mk II</h1>
+        <div class="project-meta">
+            <span>📅 15 Nov 2025</span>
+            <span>⏱️ 4 Min Read</span>
+            <span style="color: var(--accent-colour);">⚙️ Hardware</span>
+        </div>
+    </div>
+
+    <p>This project involved integrating an RPLIDAR sensor into a custom-built rover chassis for real-time obstacle avoidance and mapping. The goal was to create a robust, self-navigating platform capable of traversing uneven terrain.</p>
     
-    <h2>Hardware Utilised</h2>
-    <ul>
-        <li>Raspberry Pi 4</li>
-        <li>RPLIDAR A1</li>
-        <li>L298N Motor Controllers</li>
-    </ul>
+    <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <h2>System Architecture</h2>
     
-    <h2>The Code</h2>
-    <p>The navigation stack is written in Python, operating on ROS2 for seamless node communication.</p>
+    <p>The navigation stack is written in Python, operating on ROS2 for seamless node communication. By offloading the heavy kinematic calculations to a dedicated coprocessor, the main Raspberry Pi 4 is freed up to handle the high-frequency LIDAR point clouds.</p>
+
+    <div class="feature-grid">
+        <div class="feature-box">
+            <h3>Sensory Input</h3>
+            <ul style="margin:0; padding-left: 1.2rem; color: #ccc;">
+                <li>RPLIDAR A1 (360° scanning)</li>
+                <li>MPU6050 6-DOF IMU</li>
+                <li>Ultrasonic fallback sensors</li>
+            </ul>
+        </div>
+        <div class="feature-box">
+            <h3>Drive System</h3>
+            <ul style="margin:0; padding-left: 1.2rem; color: #ccc;">
+                <li>4x 12V High-Torque DC Motors</li>
+                <li>L298N Dual Motor Controllers</li>
+                <li>10,000mAh LiPo Battery pack</li>
+            </ul>
+        </div>
+    </div>
 </div>
