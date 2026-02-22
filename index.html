@@ -243,14 +243,14 @@
     #mimi-eyes {
         display: flex;
         justify-content: space-between;
-        width: 36px;
+        width: 40px;
         margin: 0 auto;
         transition: transform 0.1s ease-out;
         filter: drop-shadow(0 0 6px rgba(126, 196, 46, 0.9));
     }
 
     .mimi-eye {
-        width: 15px; 
+        width: 16px; 
         height: 12px;
         fill: #7cc127;
         stroke: #7cc127;
@@ -295,7 +295,7 @@
         const deltaY = e.clientY - mimiCentreY;
         
         const angle = Math.atan2(deltaY, deltaX);
-        const maxEyeMove = 8; 
+        const maxEyeMove = 5; 
         const distance = Math.min(Math.hypot(deltaX, deltaY) / 45, maxEyeMove); 
         
         const moveX = Math.cos(angle) * distance;
