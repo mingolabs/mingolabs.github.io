@@ -5,6 +5,7 @@ function initStatusIcons() {
     statusDiv.style.display = 'flex';
     statusDiv.style.alignItems = 'center';
     statusDiv.style.gap = '16px'; 
+    statusDiv.style.height = '100%';
 
     // Clean up the old hardcoded text emojis
     statusDiv.childNodes.forEach(node => {
@@ -20,13 +21,17 @@ function initStatusIcons() {
         weatherSpan.style.display = 'flex';
         weatherSpan.style.alignItems = 'center';
         weatherSpan.style.gap = '6px';
+        weatherSpan.style.height = '100%';
     }
 
-    // Global Audio Mute Logic
+    // Global Audio Mute & Volume Logic
     window.mingosMuted = false;
+    window.mingosVolume = 0.5; // Default 50% volume
+
     const originalPlay = HTMLAudioElement.prototype.play;
     HTMLAudioElement.prototype.play = function() {
         this.muted = window.mingosMuted;
+        this.volume = window.mingosVolume;
         return originalPlay.call(this);
     };
 
@@ -37,13 +42,13 @@ function initStatusIcons() {
             position: relative;
             display: flex;
             align-items: center;
-            height: 30px; /* Matches top-bar height to prevent hover gaps */
+            height: 100%;
         }
         .settings-dropdown {
             position: absolute;
             top: 28px;
             right: -10px;
-            width: 220px;
+            width: 240px;
             background: rgba(40, 40, 40, 0.95);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -76,6 +81,33 @@ function initStatusIcons() {
         }
         .dropdown-item:hover {
             background: rgba(255, 255, 255, 0.15);
+        }
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 0.8rem;
+            color: #fdfdfd;
+        }
+        .volume-slider {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: #555;
+            border-radius: 2px;
+            outline: none;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-colour);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
         }
         /* Custom Toggle Switch */
         .toggle-switch {
@@ -160,10 +192,19 @@ function initStatusIcons() {
     const muteItem = document.createElement('div');
     muteItem.className = 'dropdown-item';
     muteItem.innerHTML = `
-        <span>System Sounds</span>
+        <span>Mute Sounds</span>
         <div class="toggle-switch" id="mute-toggle"></div>
     `;
     
+    // Volume Slider
+    const volumeItem = document.createElement('div');
+    volumeItem.className = 'volume-container';
+    volumeItem.innerHTML = `
+        <span style="font-size: 1rem; opacity: 0.7;">🔈</span>
+        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="50">
+        <span style="font-size: 1rem; opacity: 0.7;">🔊</span>
+    `;
+
     muteItem.onclick = (e) => {
         e.stopPropagation();
         window.mingosMuted = !window.mingosMuted;
@@ -173,11 +214,39 @@ function initStatusIcons() {
             toggle.classList.add('muted');
         } else {
             toggle.classList.remove('muted');
+            // Reset to 50% if unmuted while slider is at 0
+            if (window.mingosVolume === 0) {
+                window.mingosVolume = 0.5;
+                document.getElementById('volume-slider').value = 50;
+            }
             if (typeof playRandomPop === 'function') playRandomPop();
         }
     };
 
+    // Handle Slider adjustments
+    const slider = volumeItem.querySelector('#volume-slider');
+    slider.oninput = (e) => {
+        e.stopPropagation();
+        window.mingosVolume = e.target.value / 100;
+        
+        if (window.mingosVolume > 0 && window.mingosMuted) {
+            window.mingosMuted = false;
+            document.getElementById('mute-toggle').classList.remove('muted');
+        } else if (window.mingosVolume === 0 && !window.mingosMuted) {
+            window.mingosMuted = true;
+            document.getElementById('mute-toggle').classList.add('muted');
+        }
+    };
+    
+    slider.onchange = (e) => {
+        if (!window.mingosMuted && typeof playRandomPop === 'function') playRandomPop();
+    };
+
+    // Prevent dropdown from closing when interacting with slider
+    volumeItem.onclick = (e) => e.stopPropagation();
+
     dropdown.appendChild(muteItem);
+    dropdown.appendChild(volumeItem);
     settingsSpan.appendChild(dropdown);
     
     // Ensure wrappers wrap tightly around the block SVGs
