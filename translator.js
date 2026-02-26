@@ -1,6 +1,6 @@
 const GALLIFREYAN_DICT = {
     'b': { stem: 'B', lines: 0, dots: 0 },
-    'ch': { stem: 'J', lines: 0, dots: 2 },
+    'ch': { stem: 'B', lines: 0, dots: 2 },
     'd': { stem: 'B', lines: 0, dots: 3 },
     'f': { stem: 'B', lines: 3, dots: 0 },
     'g': { stem: 'B', lines: 1, dots: 0 },
@@ -44,13 +44,11 @@ function initGallifreyanEngine() {
             
             while (i < word.length) {
                 let chunk = word[i];
-                let isDigraph = false;
                 
                 if (i < word.length - 1) {
                     const possibleDigraph = word.substring(i, i + 2);
                     if (GALLIFREYAN_DICT[possibleDigraph]) {
                         chunk = possibleDigraph;
-                        isDigraph = true;
                         i++;
                     }
                 }
@@ -89,7 +87,6 @@ function initGallifreyanEngine() {
         const centreY = displayHeight / 2;
         const sentenceRadius = Math.min(centreX, centreY) * 0.85;
 
-        // Draw Sentence Rings
         ctx.strokeStyle = '#f6a15a';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -101,7 +98,6 @@ function initGallifreyanEngine() {
         ctx.arc(centreX, centreY, sentenceRadius * 0.94, 0, Math.PI * 2);
         ctx.stroke();
         
-        // Inner aesthetic ring
         ctx.strokeStyle = 'rgba(246, 161, 90, 0.3)';
         ctx.beginPath();
         ctx.arc(centreX, centreY, sentenceRadius * 0.90, 0, Math.PI * 2);
@@ -115,37 +111,26 @@ function initGallifreyanEngine() {
         words.forEach((wordTokens, wIndex) => {
             const wordAngle = (Math.PI / 2) - ((Math.PI * 2 / words.length) * wIndex);
             const wordRadius = words.length === 1 ? sentenceRadius * 0.5 : (sentenceRadius / words.length) * 1.2;
-            const wordDist = sentenceRadius * 0.94 - wordRadius;
+            const wX = centreX + Math.cos(wordAngle) * (sentenceRadius * 0.94 - wordRadius);
+            const wY = centreY + Math.sin(wordAngle) * (sentenceRadius * 0.94 - wordRadius);
             
-            const wX = centreX + Math.cos(wordAngle) * wordDist;
-            const wY = centreY + Math.sin(wordAngle) * wordDist;
-            
-            // Mask out intersecting stems
+            // Mask out intersecting stems from the word circle
             ctx.globalCompositeOperation = 'destination-out';
-            ctx.lineWidth = 3;
+            ctx.fillStyle = '#000';
             wordTokens.forEach((token, tIndex) => {
                 if (token.type !== 'consonant') return;
                 const tokenAngle = (Math.PI / 2) - ((Math.PI * 2 / wordTokens.length) * tIndex);
                 const stemData = GALLIFREYAN_DICT[token.char];
-                const tokenRadius = wordRadius * 0.35;
                 
-                let tX = wX + Math.cos(tokenAngle) * (wordRadius - tokenRadius);
-                let tY = wY + Math.sin(tokenAngle) * (wordRadius - tokenRadius);
-                
-                if (stemData.stem === 'B') {
-                    tX = wX + Math.cos(tokenAngle) * wordRadius;
-                    tY = wY + Math.sin(tokenAngle) * wordRadius;
+                if (stemData.stem === 'B' || stemData.stem === 'T' || stemData.stem === 'TH') {
+                    let maskRadius = wordRadius * (stemData.stem === 'B' ? 0.45 : 0.25);
+                    let maskDist = stemData.stem === 'B' ? wordRadius * 0.85 : wordRadius;
+                    let mX = wX + Math.cos(tokenAngle) * maskDist;
+                    let mY = wY + Math.sin(tokenAngle) * maskDist;
+                    
                     ctx.beginPath();
-                    ctx.arc(tX, tY, tokenRadius, 0, Math.PI * 2);
+                    ctx.arc(mX, mY, maskRadius + 1.5, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.stroke();
-                } else if (stemData.stem === 'T') {
-                    tX = wX + Math.cos(tokenAngle) * wordRadius;
-                    tY = wY + Math.sin(tokenAngle) * wordRadius;
-                    ctx.beginPath();
-                    ctx.arc(tX, tY, tokenRadius * 0.8, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
                 }
             });
             
@@ -159,23 +144,25 @@ function initGallifreyanEngine() {
             // Draw Letters
             wordTokens.forEach((token, tIndex) => {
                 const tokenAngle = (Math.PI / 2) - ((Math.PI * 2 / wordTokens.length) * tIndex);
-                let tX, tY;
-                let tokenRadius = wordRadius * 0.35;
+                let tX, tY, tokenRadius;
 
                 if (token.type === 'consonant') {
                     const stemData = GALLIFREYAN_DICT[token.char];
                     
                     if (stemData.stem === 'B') {
-                        tX = wX + Math.cos(tokenAngle) * wordRadius;
-                        tY = wY + Math.sin(tokenAngle) * wordRadius;
+                        tokenRadius = wordRadius * 0.45;
+                        tX = wX + Math.cos(tokenAngle) * (wordRadius * 0.85);
+                        tY = wY + Math.sin(tokenAngle) * (wordRadius * 0.85);
                     } else if (stemData.stem === 'J') {
-                        tX = wX + Math.cos(tokenAngle) * (wordRadius - tokenRadius - 5);
-                        tY = wY + Math.sin(tokenAngle) * (wordRadius - tokenRadius - 5);
+                        tokenRadius = wordRadius * 0.35;
+                        tX = wX + Math.cos(tokenAngle) * (wordRadius - tokenRadius - 8);
+                        tY = wY + Math.sin(tokenAngle) * (wordRadius - tokenRadius - 8);
                     } else if (stemData.stem === 'T') {
+                        tokenRadius = wordRadius * 0.25;
                         tX = wX + Math.cos(tokenAngle) * wordRadius;
                         tY = wY + Math.sin(tokenAngle) * wordRadius;
-                        tokenRadius = tokenRadius * 0.8; 
                     } else if (stemData.stem === 'TH') {
+                        tokenRadius = wordRadius * 0.25;
                         tX = wX + Math.cos(tokenAngle) * wordRadius;
                         tY = wY + Math.sin(tokenAngle) * wordRadius;
                     }
@@ -188,73 +175,67 @@ function initGallifreyanEngine() {
                     if (stemData.dots > 0) {
                         for (let d = 0; d < stemData.dots; d++) {
                             const dotAngle = tokenAngle + (Math.PI * 2 / stemData.dots) * d;
-                            const dotX = tX + Math.cos(dotAngle) * (tokenRadius * 0.6);
-                            const dotY = tY + Math.sin(dotAngle) * (tokenRadius * 0.6);
+                            const dotDist = stemData.stem === 'TH' || stemData.stem === 'T' ? tokenRadius + 12 : tokenRadius - 12;
+                            const dotX = tX + Math.cos(dotAngle) * dotDist;
+                            const dotY = tY + Math.sin(dotAngle) * dotDist;
                             ctx.beginPath();
                             ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
                             ctx.fill();
                         }
                     }
 
-                    // Draw Lines (simplified straight lines radiating outwards)
+                    // Draw Lines
                     if (stemData.lines > 0) {
                         for (let l = 0; l < stemData.lines; l++) {
-                            const lineAngle = tokenAngle + (Math.PI / stemData.lines) * l + 0.5;
+                            const lineAngle = tokenAngle + (Math.PI / stemData.lines) * l + (stemData.stem === 'J' ? 0 : 0.5);
                             ctx.beginPath();
                             ctx.moveTo(tX + Math.cos(lineAngle) * tokenRadius, tY + Math.sin(lineAngle) * tokenRadius);
-                            ctx.lineTo(tX + Math.cos(lineAngle) * (tokenRadius + 20), tY + Math.sin(lineAngle) * (tokenRadius + 20));
+                            ctx.lineTo(tX + Math.cos(lineAngle) * (tokenRadius + 25), tY + Math.sin(lineAngle) * (tokenRadius + 25));
                             ctx.stroke();
                         }
                     }
 
                     // Draw Attached Vowels
                     token.attachedVowels.forEach((vowel, vIndex) => {
-                        const vRadius = wordRadius * 0.1;
-                        let vX = tX;
-                        let vY = tY;
+                        const vRadius = wordRadius * 0.12;
+                        let vX = tX, vY = tY;
 
                         if (vowel === 'a') {
                             vX = tX + Math.cos(tokenAngle) * (tokenRadius + vRadius + 5);
                             vY = tY + Math.sin(tokenAngle) * (tokenRadius + vRadius + 5);
-                        } else if (vowel === 'e') {
-                            vX = tX;
-                            vY = tY;
-                        } else if (vowel === 'i') {
-                            vX = tX;
-                            vY = tY;
-                            ctx.beginPath();
-                            ctx.moveTo(vX, vY);
-                            ctx.lineTo(vX - Math.cos(tokenAngle) * 15, vY - Math.sin(tokenAngle) * 15);
-                            ctx.stroke();
                         } else if (vowel === 'o') {
                             vX = tX + Math.cos(tokenAngle + Math.PI) * tokenRadius;
                             vY = tY + Math.sin(tokenAngle + Math.PI) * tokenRadius;
-                        } else if (vowel === 'u') {
-                            vX = tX;
-                            vY = tY;
-                            ctx.beginPath();
-                            ctx.moveTo(vX, vY);
-                            ctx.lineTo(vX + Math.cos(tokenAngle) * 15, vY + Math.sin(tokenAngle) * 15);
-                            ctx.stroke();
                         }
                         
                         ctx.beginPath();
                         ctx.arc(vX, vY, vRadius, 0, Math.PI * 2);
                         ctx.stroke();
+
+                        if (vowel === 'i') {
+                            ctx.beginPath();
+                            ctx.moveTo(vX, vY + vRadius);
+                            ctx.lineTo(vX + Math.cos(tokenAngle + Math.PI) * 20, vY + Math.sin(tokenAngle + Math.PI) * 20);
+                            ctx.stroke();
+                        } else if (vowel === 'u') {
+                            ctx.beginPath();
+                            ctx.moveTo(vX, vY - vRadius);
+                            ctx.lineTo(vX + Math.cos(tokenAngle) * 20, vY + Math.sin(tokenAngle) * 20);
+                            ctx.stroke();
+                        }
                     });
 
                 } else if (token.type === 'vowel') {
-                    // Standalone Vowel
                     const vRadius = wordRadius * 0.15;
-                    tX = wX + Math.cos(tokenAngle) * (wordRadius - vRadius - 5);
-                    tY = wY + Math.sin(tokenAngle) * (wordRadius - vRadius - 5);
+                    tX = wX + Math.cos(tokenAngle) * (wordRadius);
+                    tY = wY + Math.sin(tokenAngle) * (wordRadius);
 
                     if (token.char === 'a') {
-                        tX = wX + Math.cos(tokenAngle) * (wordRadius + vRadius + 5);
-                        tY = wY + Math.sin(tokenAngle) * (wordRadius + vRadius + 5);
+                        tX = wX + Math.cos(tokenAngle) * (wordRadius + vRadius + 10);
+                        tY = wY + Math.sin(tokenAngle) * (wordRadius + vRadius + 10);
                     } else if (token.char === 'o') {
-                        tX = wX + Math.cos(tokenAngle) * wordRadius;
-                        tY = wY + Math.sin(tokenAngle) * wordRadius;
+                        tX = wX + Math.cos(tokenAngle) * (wordRadius - vRadius - 10);
+                        tY = wY + Math.sin(tokenAngle) * (wordRadius - vRadius - 10);
                     }
 
                     ctx.beginPath();
@@ -263,13 +244,13 @@ function initGallifreyanEngine() {
 
                     if (token.char === 'i') {
                         ctx.beginPath();
-                        ctx.moveTo(tX, tY);
-                        ctx.lineTo(tX - Math.cos(tokenAngle) * 15, tY - Math.sin(tokenAngle) * 15);
+                        ctx.moveTo(tX, tY + vRadius);
+                        ctx.lineTo(tX + Math.cos(tokenAngle + Math.PI) * 20, tY + Math.sin(tokenAngle + Math.PI) * 20);
                         ctx.stroke();
                     } else if (token.char === 'u') {
                         ctx.beginPath();
-                        ctx.moveTo(tX, tY);
-                        ctx.lineTo(tX + Math.cos(tokenAngle) * 15, tY + Math.sin(tokenAngle) * 15);
+                        ctx.moveTo(tX, tY - vRadius);
+                        ctx.lineTo(tX + Math.cos(tokenAngle) * 20, tY + Math.sin(tokenAngle) * 20);
                         ctx.stroke();
                     }
                 }
