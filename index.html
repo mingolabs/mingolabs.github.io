@@ -450,7 +450,26 @@
             <div class="dock-icon" id="dock-robotics" onclick="toggleWindow('robotics-win', this)" onmouseenter="playRandomPop()" title="Robotics"><img src="mimi.png" width="48px"/></div>
             <div class="dock-icon" id="dock-software" onclick="toggleWindow('software-win', this)" onmouseenter="playRandomPop()" title="Software">💻</div>
             <div class="dock-icon" id="dock-readme" onclick="toggleWindow('readme-win', this)" onmouseenter="playRandomPop()" title="System Info">📄</div>
+            <div class="dock-icon" id="dock-translator" onclick="toggleWindow('translator-win', this)" onmouseenter="if(typeof playRandomPop === 'function') playRandomPop()" title="Gallifreyan Translator">🪐</div>
+    </div>
+
+        
+<div id="translator-win" class="window" style="top: 15%; left: 30%; width: 680px; height: 500px; min-height: 400px; min-width: 400px;">
+    <div class="title-bar" id="translator-title-bar">
+        <span class="window-title">Gallifreyan Translator</span>
+        <div class="window-controls">
+            <button onclick="minimiseWindow('translator-win')" class="win-btn min-btn"></button>
+            <button onclick="maximiseWindow('translator-win')" class="win-btn max-btn"></button>
+            <button onclick="closeWindow('translator-win', 'dock-translator')" class="win-btn close-btn"></button>
         </div>
+    </div>
+    <div class="window-content" style="display: flex; flex-direction: column; padding: 0; background: #121212; overflow: hidden;">
+        <input type="text" id="gallifreyan-input" placeholder="Enter text to translate..." style="background: rgba(0,0,0,0.4); border: none; border-bottom: 2px solid var(--accent-colour); color: #fdfdfd; padding: 1.5rem; font-size: 1.2rem; outline: none; font-family: 'Fira Sans', sans-serif;">
+        <div id="canvas-container" style="flex-grow: 1; position: relative;">
+            <canvas id="gallifreyan-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+        </div>
+    </div>
+</div>
 
         <div id="mail-win" class="window" style="top: 8%; left: 10%; width: 700px;">
             <div class="title-bar">
@@ -761,7 +780,7 @@
     <script src="weather.js"></script>
     <script src="status.js"></script>
     <script src="projects.js"></script>
-
+<script src="translator.js"></script>
     
 
 </body>
